@@ -31,6 +31,24 @@ func TestDerivePrefix(t *testing.T) {
 		{"/scene/1/stream.mpd/init_v.webm", "/scene/1/stream"},
 		{"/scene/1/stream.mpd/init_a.webm", "/scene/1/stream"},
 
+		// Scene file stream variants
+		{"/scene/1/file/2/stream", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.mp4", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.webm", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.mkv", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.m3u8", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.mpd", "/scene/1/file/2/stream"},
+
+		// Scene file HLS segments
+		{"/scene/1/file/2/stream.m3u8/0.ts", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.m3u8/99.ts", "/scene/1/file/2/stream"},
+
+		// Scene file DASH segments
+		{"/scene/1/file/2/stream.mpd/5_v.webm", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.mpd/5_a.webm", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.mpd/init_v.webm", "/scene/1/file/2/stream"},
+		{"/scene/1/file/2/stream.mpd/init_a.webm", "/scene/1/file/2/stream"},
+
 		// Caption
 		{"/scene/1/caption", "/scene/1/caption"},
 
@@ -140,6 +158,38 @@ func TestDifferentPathSamePrefixVerifies(t *testing.T) {
 	}
 }
 
+func TestDifferentSceneFilePathSamePrefixVerifies(t *testing.T) {
+	secret := []byte("test-secret-key")
+	cid := GenerateCredentialID(secret, "alice")
+	expires := time.Now().Add(1 * time.Hour)
+
+	// Sign for the scene file stream prefix
+	params := SignPrefix("/scene/1/file/2/stream", secret, cid, expires)
+
+	// Verify with different paths that share the same file stream prefix
+	paths := []string{
+		"/scene/1/file/2/stream",
+		"/scene/1/file/2/stream.mp4",
+		"/scene/1/file/2/stream.m3u8",
+		"/scene/1/file/2/stream.m3u8/0.ts",
+		"/scene/1/file/2/stream.mpd",
+		"/scene/1/file/2/stream.mpd/5_v.webm",
+		"/scene/1/file/2/stream.mpd/init_a.webm",
+	}
+
+	for _, path := range paths {
+		t.Run(path, func(t *testing.T) {
+			gotCID, err := VerifyURL(path, params, secret)
+			if err != nil {
+				t.Fatalf("unexpected error for path %q: %v", path, err)
+			}
+			if gotCID != cid {
+				t.Errorf("expected cid %q, got %q", cid, gotCID)
+			}
+		})
+	}
+}
+
 func TestDifferentPrefixFails(t *testing.T) {
 	secret := []byte("test-secret-key")
 	cid := GenerateCredentialID(secret, "alice")
@@ -161,6 +211,32 @@ func TestDifferentPrefixFails(t *testing.T) {
 
 	// Different entity type
 	_, err = VerifyURL("/image/1/stream", params, secret)
+	if !errors.Is(err, ErrInvalidSignature) {
+		t.Errorf("expected ErrInvalidSignature, got %v", err)
+	}
+}
+
+func TestDifferentSceneFilePrefixFails(t *testing.T) {
+	secret := []byte("test-secret-key")
+	cid := GenerateCredentialID(secret, "alice")
+	expires := time.Now().Add(1 * time.Hour)
+
+	params := SignPrefix("/scene/1/file/2/stream", secret, cid, expires)
+
+	// Different file ID
+	_, err := VerifyURL("/scene/1/file/3/stream", params, secret)
+	if !errors.Is(err, ErrInvalidSignature) {
+		t.Errorf("expected ErrInvalidSignature, got %v", err)
+	}
+
+	// Different scene ID
+	_, err = VerifyURL("/scene/2/file/2/stream", params, secret)
+	if !errors.Is(err, ErrInvalidSignature) {
+		t.Errorf("expected ErrInvalidSignature, got %v", err)
+	}
+
+	// Different resource type
+	_, err = VerifyURL("/scene/1/file/2/caption", params, secret)
 	if !errors.Is(err, ErrInvalidSignature) {
 		t.Errorf("expected ErrInvalidSignature, got %v", err)
 	}

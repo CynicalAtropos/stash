@@ -23,6 +23,7 @@ import (
 
 type SceneFinder interface {
 	models.SceneGetter
+	models.VideoFileLoader
 
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error)
@@ -69,6 +70,20 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.mpd/{segment}_v.webm", rs.StreamDASHVideoSegment)
 		r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
 
+		r.Route("/file/{fileId}", func(r chi.Router) {
+			r.Use(rs.SceneFileCtx)
+
+			r.Get("/stream", rs.StreamDirect)
+			r.Get("/stream.mp4", rs.StreamMp4)
+			r.Get("/stream.webm", rs.StreamWebM)
+			r.Get("/stream.mkv", rs.StreamMKV)
+			r.Get("/stream.m3u8", rs.StreamHLS)
+			r.Get("/stream.m3u8/{segment}.ts", rs.StreamHLSSegment)
+			r.Get("/stream.mpd", rs.StreamDASH)
+			r.Get("/stream.mpd/{segment}_v.webm", rs.StreamDASHVideoSegment)
+			r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
+		})
+
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
@@ -92,6 +107,15 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	if f := selectedSceneFile(r); f != nil {
+		ss := manager.SceneServer{
+			TxnManager:       rs.txnManager,
+			SceneCoverGetter: rs.sceneFinder,
+		}
+		ss.StreamVideoFileDirect(f, w, r)
+		return
+	}
+
 	ss := manager.SceneServer{
 		TxnManager:       rs.txnManager,
 		SceneCoverGetter: rs.sceneFinder,
@@ -111,12 +135,12 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	// only allow mkv streaming if the scene container is an mkv already
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	pf := scene.Files.Primary()
-	if pf == nil {
+	f := rs.getStreamVideoFile(r, scene)
+	if f == nil {
 		return
 	}
 
-	container, err := manager.GetVideoFileContainer(pf)
+	container, err := manager.GetVideoFileContainer(f)
 	if err != nil {
 		logger.Errorf("[transcode] error getting container: %v", err)
 	}
@@ -141,7 +165,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 		return
 	}
 
-	f := scene.Files.Primary()
+	f := rs.getStreamVideoFile(r, scene)
 	if f == nil {
 		return
 	}
@@ -182,7 +206,7 @@ func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, str
 		return
 	}
 
-	f := scene.Files.Primary()
+	f := rs.getStreamVideoFile(r, scene)
 	if f == nil {
 		return
 	}
@@ -218,7 +242,7 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 		return
 	}
 
-	f := scene.Files.Primary()
+	f := rs.getStreamVideoFile(r, scene)
 	if f == nil {
 		return
 	}
@@ -227,7 +251,7 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 		logger.Warnf("[transcode] error parsing query form: %v", err)
 	}
 
-	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	sceneHash := rs.getStreamVideoFileHash(r, scene, f)
 
 	segment := chi.URLParam(r, "segment")
 	resolution := r.Form.Get("resolution")
@@ -241,6 +265,27 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 	}
 
 	streamManager.ServeSegment(w, r, options)
+}
+
+func selectedSceneFile(r *http.Request) *models.VideoFile {
+	f, _ := r.Context().Value(sceneFileKey).(*models.VideoFile)
+	return f
+}
+
+func (rs sceneRoutes) getStreamVideoFile(r *http.Request, scene *models.Scene) *models.VideoFile {
+	if f := selectedSceneFile(r); f != nil {
+		return f
+	}
+
+	return scene.Files.Primary()
+}
+
+func (rs sceneRoutes) getStreamVideoFileHash(r *http.Request, scene *models.Scene, f *models.VideoFile) string {
+	if selectedSceneFile(r) != nil {
+		return manager.GetVideoFileHash(f, config.GetInstance().GetVideoFileNamingAlgorithm())
+	}
+
+	return scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
@@ -597,6 +642,70 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), sceneKey, scene)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (rs sceneRoutes) SceneFileCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		fileID, err := strconv.Atoi(chi.URLParam(r, "fileId"))
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		scene, _ := r.Context().Value(sceneKey).(*models.Scene)
+		var selectedFile *models.VideoFile
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
+			var err error
+			if scene == nil {
+				scene, err = rs.sceneFinder.Find(ctx, sceneID)
+				if err != nil {
+					return err
+				}
+			}
+			if scene == nil {
+				return nil
+			}
+
+			if err := scene.LoadFiles(ctx, rs.sceneFinder); err != nil {
+				return err
+			}
+
+			for _, f := range scene.Files.List() {
+				if f.ID == models.FileID(fileID) {
+					selectedFile = f
+					return nil
+				}
+			}
+
+			return nil
+		})
+		if errors.Is(readTxnErr, context.Canceled) {
+			return
+		}
+		if readTxnErr != nil {
+			logger.Warnf("read transaction error on fetch scene files: %v", readTxnErr)
+			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if selectedFile == nil {
+			http.Error(w, http.StatusText(404), 404)
+			return
+		}
+
+		ctx := r.Context()
+		if _, ok := ctx.Value(sceneKey).(*models.Scene); !ok {
+			ctx = context.WithValue(ctx, sceneKey, scene)
+		}
+		ctx = context.WithValue(ctx, sceneFileKey, selectedFile)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

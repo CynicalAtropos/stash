@@ -3,6 +3,7 @@ import videojs, { VideoJsPlayer } from "video.js";
 export interface ISource extends videojs.Tech.SourceObject {
   label?: string;
   errored?: boolean;
+  fileID?: string;
 }
 
 class SourceMenuItem extends videojs.getComponent("MenuItem") {
@@ -106,6 +107,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
   private selectedIndex = -1;
   private cleanupTextTracks: HTMLTrackElement[] = [];
   private manualTextTracks: HTMLTrackElement[] = [];
+  private onSourceSelected?: (source: ISource) => void;
 
   // don't auto play next source if user manually selected a source
   private manuallySelected = false;
@@ -116,24 +118,8 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     this.menu = new SourceMenuButton(player);
 
     this.menu.on("sourceselected", (_, source: ISource) => {
-      this.selectedIndex = this.sources.indexOf(source);
-      if (this.selectedIndex === -1) return;
-
       this.manuallySelected = true;
-
-      const loadSrc = this.sources[this.selectedIndex];
-
-      const currentTime = player.currentTime();
-      const paused = player.paused();
-
-      player.src(loadSrc);
-      player.one("canplay", () => {
-        if (paused) {
-          player.pause();
-        }
-        player.currentTime(currentTime);
-      });
-      player.play();
+      this.loadSource(source, true);
     });
 
     player.on("ready", () => {
@@ -195,6 +181,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
         const newSource = this.sources[this.selectedIndex];
         console.log(`Trying next source in playlist: '${newSource.label}'`);
         this.menu.setSelectedSource(newSource);
+        this.onSourceSelected?.(newSource);
 
         const currentTime = player.currentTime();
         player.src(newSource);
@@ -224,6 +211,43 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 
     this.sources = sources;
     this.player.src(sources[0]);
+  }
+
+  setSourceSelectedHandler(handler?: (source: ISource) => void) {
+    this.onSourceSelected = handler;
+  }
+
+  selectSource(predicate: (source: ISource) => boolean) {
+    const source = this.sources.find(predicate);
+    if (!source) return false;
+
+    this.manuallySelected = true;
+    return this.loadSource(source, false);
+  }
+
+  private loadSource(source: ISource, preservePaused: boolean) {
+    const selectedIndex = this.sources.findIndex((src) => src === source);
+    if (selectedIndex === -1) return false;
+
+    this.selectedIndex = selectedIndex;
+    this.menu.setSelectedSource(source);
+    this.onSourceSelected?.(source);
+
+    const currentTime = this.player.currentTime();
+    const paused = this.player.paused();
+
+    if (this.player.currentSrc() !== source.src) {
+      this.player.src(source);
+      this.player.one("canplay", () => {
+        if (preservePaused && paused) {
+          this.player.pause();
+        }
+        this.player.currentTime(currentTime);
+      });
+    }
+
+    this.player.play();
+    return true;
   }
 
   get textTracks(): HTMLTrackElement[] {

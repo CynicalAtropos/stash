@@ -1,3 +1,5 @@
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import {
@@ -20,6 +22,7 @@ import { TextField, URLField, URLsField } from "src/utils/field";
 import { StashIDPill } from "src/components/Shared/StashID";
 import { PatchComponent } from "../../../patch";
 import { FileSize } from "src/components/Shared/FileSize";
+import { Icon } from "src/components/Shared/Icon";
 
 interface IFileInfoPanelProps {
   sceneID: string;
@@ -165,11 +168,14 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
 
 interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
+  selectedFileID?: string;
+  onPlayFile?: (fileID: string) => void;
 }
 
 const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
+  const intl = useIntl();
   const Toast = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -232,7 +238,10 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     if (props.scene.files.length === 1) {
       return (
-        <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />
+        <FileInfoPanel
+          sceneID={props.scene.id}
+          file={props.scene.files[0]}
+        />
       );
     }
 
@@ -261,30 +270,73 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
             selected={reassigningFile}
           />
         )}
-        {props.scene.files.map((file, index) => (
-          <Card key={file.id} className="scene-file-card">
-            <Accordion.Toggle as={Card.Header} eventKey={file.id}>
-              <TruncatedText text={TextUtils.fileNameFromPath(file.path)} />
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey={file.id}>
-              <Card.Body>
-                <FileInfoPanel
-                  sceneID={props.scene.id}
-                  file={file}
-                  primary={index === 0}
-                  ofMany
-                  onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
-                  onDeleteFile={() => setDeletingFile(file)}
-                  onReassign={() => setReassigningFile(file)}
-                  loading={loading}
-                />
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        ))}
+        {props.scene.files.map((file, index) => {
+          const selected =
+            file.id === (props.selectedFileID ?? props.scene.files[0].id);
+          const playLabel = selected
+            ? intl.formatMessage({ id: "currently_playing" })
+            : intl.formatMessage({ id: "actions.play" });
+
+          return (
+            <Card key={file.id} className="scene-file-card">
+              <Accordion.Toggle
+                as={Card.Header}
+                eventKey={file.id}
+                className={cx("scene-file-card-header", { selected })}
+              >
+                <div className="scene-file-card-title">
+                  <div className="scene-file-card-name">
+                    <TruncatedText text={TextUtils.fileNameFromPath(file.path)} />
+                  </div>
+                  {props.onPlayFile && (
+                    <Button
+                      aria-current={selected ? "true" : undefined}
+                      aria-label={playLabel}
+                      aria-disabled={selected}
+                      className={cx("scene-file-play-button", { selected })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!selected) {
+                          props.onPlayFile?.(file.id);
+                        }
+                      }}
+                      size="sm"
+                      title={playLabel}
+                      variant={selected ? "primary" : "secondary"}
+                    >
+                      <Icon icon={faPlay} />
+                    </Button>
+                  )}
+                </div>
+              </Accordion.Toggle>
+              <Accordion.Collapse eventKey={file.id}>
+                <Card.Body>
+                  <FileInfoPanel
+                    sceneID={props.scene.id}
+                    file={file}
+                    primary={index === 0}
+                    ofMany
+                    onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
+                    onDeleteFile={() => setDeletingFile(file)}
+                    onReassign={() => setReassigningFile(file)}
+                    loading={loading}
+                  />
+                </Card.Body>
+              </Accordion.Collapse>
+            </Card>
+          );
+        })}
       </Accordion>
     );
-  }, [props.scene, loading, Toast, deletingFile, reassigningFile]);
+  }, [
+    props.scene,
+    props.selectedFileID,
+    props.onPlayFile,
+    loading,
+    Toast,
+    deletingFile,
+    reassigningFile,
+  ]);
 
   return (
     <>

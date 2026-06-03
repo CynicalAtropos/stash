@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
@@ -309,8 +310,7 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 }
 
 func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
-	// load the primary file into the scene
-	_, err := r.getPrimaryFile(ctx, obj)
+	_, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -320,24 +320,24 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
 
-	// Build the base stream URL with signing params or apikey
-	streamURL := builder.GetStreamURL("")
-	if config.HasCredentials() {
-		userID := session.GetCurrentUserID(ctx)
-		if userID == nil {
-			return nil, fmt.Errorf("user ID not found")
-		}
-		streamURL.RawQuery = signedParams(config, *userID, signedurl.DerivePrefix(streamURL.Path)).Encode()
-	} else {
-		apiKey := config.GetAPIKey()
-		if apiKey != "" {
-			v := streamURL.Query()
-			v.Set("apikey", apiKey)
-			streamURL.RawQuery = v.Encode()
-		}
+	userID, err := getSignedURLUserID(ctx, config)
+	if err != nil {
+		return nil, err
 	}
 
-	return manager.GetSceneStreamPaths(obj, streamURL, config.GetMaxStreamingTranscodeSize())
+	streamURL := builder.GetStreamURL("")
+	setStreamURLAuthParams(config, userID, streamURL)
+
+	return manager.GetSceneStreamPaths(
+		obj,
+		streamURL,
+		func(file *models.VideoFile) *url.URL {
+			u := builder.GetFileStreamURL(file.ID, "")
+			setStreamURLAuthParams(config, userID, u)
+			return u
+		},
+		config.GetMaxStreamingTranscodeSize(),
+	)
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {

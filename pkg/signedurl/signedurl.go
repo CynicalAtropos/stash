@@ -37,6 +37,14 @@ func GenerateCredentialID(secret []byte, username string) string {
 // first 3 segments and stripping the file extension from the 3rd.
 func DerivePrefix(path string) string {
 	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if len(parts) >= 5 && parts[0] == "scene" && parts[2] == "file" {
+		action := parts[4]
+		if dotIdx := strings.IndexByte(action, '.'); dotIdx >= 0 {
+			action = action[:dotIdx]
+		}
+		return "/" + parts[0] + "/" + parts[1] + "/" + parts[2] + "/" + parts[3] + "/" + action
+	}
+
 	if len(parts) < 3 {
 		return "/" + strings.Join(parts, "/")
 	}

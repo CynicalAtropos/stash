@@ -37,6 +37,21 @@ func (b SceneURLBuilder) GetStreamURL(apiKey string) *url.URL {
 	return u
 }
 
+func (b SceneURLBuilder) GetFileStreamURL(fileID models.FileID, apiKey string) *url.URL {
+	u, err := url.Parse(fmt.Sprintf("%s/scene/%s/file/%s/stream", b.BaseURL, b.SceneID, fileID.String()))
+	if err != nil {
+		// shouldn't happen
+		panic(err)
+	}
+
+	if apiKey != "" {
+		v := u.Query()
+		v.Set("apikey", apiKey)
+		u.RawQuery = v.Encode()
+	}
+	return u
+}
+
 func (b SceneURLBuilder) GetStreamPreviewURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/preview"
 }

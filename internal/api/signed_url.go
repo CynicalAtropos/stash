@@ -1,10 +1,13 @@
 package api
 
 import (
+	"context"
+	"fmt"
 	"net/url"
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/signedurl"
 )
 
@@ -19,6 +22,33 @@ func signedParams(c *config.Config, userID string, prefix string) url.Values {
 	cid := signedurl.GenerateCredentialID(secret, userID)
 	expires := time.Now().Add(c.GetSignedURLExpiry())
 	return signedurl.SignPrefix(prefix, secret, cid, expires)
+}
+
+func getSignedURLUserID(ctx context.Context, c *config.Config) (*string, error) {
+	if !c.HasCredentials() {
+		return nil, nil
+	}
+
+	userID := session.GetCurrentUserID(ctx)
+	if userID == nil {
+		return nil, fmt.Errorf("user ID not found")
+	}
+
+	return userID, nil
+}
+
+func setStreamURLAuthParams(c *config.Config, userID *string, u *url.URL) {
+	if c.HasCredentials() {
+		u.RawQuery = signedParams(c, *userID, signedurl.DerivePrefix(u.Path)).Encode()
+		return
+	}
+
+	apiKey := c.GetAPIKey()
+	if apiKey != "" {
+		v := u.Query()
+		v.Set("apikey", apiKey)
+		u.RawQuery = v.Encode()
+	}
 }
 
 // resolveCredentialID maps a credential ID back to a username and their signing key.

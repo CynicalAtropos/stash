@@ -758,6 +758,36 @@ input[type="range"].blue-slider {
     cursor: pointer;
   }
 
+  .scene-file-card-header {
+    border-left: 3px solid transparent;
+
+    &.selected {
+      background-color: rgba($primary, 0.16);
+      border-left-color: $primary;
+    }
+  }
+
+  .scene-file-card-title {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .scene-file-card-name {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .scene-file-play-button {
+    flex: 0 0 auto;
+    margin-left: auto;
+
+    &.selected {
+      cursor: default;
+    }
+  }
+
   dl {
     margin-bottom: 0;
   }

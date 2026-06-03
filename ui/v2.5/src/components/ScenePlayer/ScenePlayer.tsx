@@ -218,6 +218,11 @@ function getMarkerTitle(marker: MarkerFragment) {
   return ret;
 }
 
+function getStreamFileID(src: URL) {
+  const match = src.pathname.match(/\/scene\/[^/]+\/file\/([^/]+)\/stream/);
+  return match?.[1];
+}
+
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
   hideScrubberOverride: boolean;
@@ -228,6 +233,9 @@ interface IScenePlayerProps {
   onComplete: () => void;
   onNext: () => void;
   onPrevious: () => void;
+  selectedFileID?: string;
+  selectedFileRequest?: number;
+  onSelectedFileChange?: (fileID: string) => void;
 }
 
 export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
@@ -242,6 +250,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     onComplete,
     onNext,
     onPrevious,
+    selectedFileID,
+    selectedFileRequest,
+    onSelectedFileChange,
   }) => {
     const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
@@ -255,6 +266,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     const [time, setTime] = useState(0);
     const [ready, setReady] = useState(false);
+    const [activeFileID, setActiveFileID] = useState<string>();
 
     const {
       interactive: interactiveClient,
@@ -280,8 +292,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     );
 
     const file = useMemo(
-      () => (scene.files.length > 0 ? scene.files[0] : undefined),
-      [scene]
+      () =>
+        scene.files.find((sceneFile) => sceneFile.id === activeFileID) ??
+        scene.files[0],
+      [scene.files, activeFileID]
     );
 
     const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
@@ -458,6 +472,39 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     }, [getPlayer, onNext, onPrevious]);
 
     useEffect(() => {
+      setActiveFileID(selectedFileID ?? scene.files[0]?.id);
+    }, [scene.files, selectedFileID]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      const sourceSelector = player.sourceSelector();
+      sourceSelector.setSourceSelectedHandler((source) => {
+        if (source.fileID) {
+          setActiveFileID(source.fileID);
+          onSelectedFileChange?.(source.fileID);
+        }
+      });
+
+      return () => sourceSelector.setSourceSelectedHandler(undefined);
+    }, [getPlayer, onSelectedFileChange]);
+
+    useEffect(() => {
+      if (!selectedFileID || selectedFileRequest === undefined) return;
+
+      const player = getPlayer();
+      if (!player) return;
+
+      const selected = player
+        .sourceSelector()
+        .selectSource((source) => source.fileID === selectedFileID);
+      if (selected) {
+        setActiveFileID(selectedFileID);
+      }
+    }, [getPlayer, selectedFileID, selectedFileRequest]);
+
+    useEffect(() => {
       if (scene.interactive && interactiveInitialised) {
         interactiveReady.current = false;
         uploadScript(scene.paths.funscript || "").then(() => {
@@ -622,7 +669,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         );
       }
 
-      const { duration } = file;
       const sourceSelector = player.sourceSelector();
       sourceSelector.setSources(
         scene.sceneStreams
@@ -634,13 +680,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           })
           .map((stream) => {
             const src = new URL(stream.url);
+            const fileID = getStreamFileID(src) ?? file.id;
+            const streamFile =
+              scene.files.find((sceneFile) => sceneFile.id === fileID) ?? file;
 
             return {
               src: stream.url,
               type: stream.mime_type ?? undefined,
               label: stream.label ?? undefined,
               offset: !isDirect(src),
-              duration,
+              duration: streamFile.duration,
+              fileID,
             };
           })
       );
@@ -812,8 +862,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       return () => {
         player.off("loadedmetadata", handleLoadMetadata);
-        const markers = player!.markers();
-        markers.clearMarkers();
+        if (!player.isDisposed()) {
+          const markers = player.markers();
+          markers.clearMarkers();
+        }
       };
     }, [getPlayer, scene, loadMarkers]);
 

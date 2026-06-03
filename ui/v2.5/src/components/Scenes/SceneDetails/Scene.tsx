@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
   useLayoutEffect,
+  useCallback,
 } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, RouteComponentProps } from "react-router-dom";
@@ -154,6 +155,8 @@ interface IProps {
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
   setContinuePlaylist: (value: boolean) => void;
+  selectedFileID?: string;
+  onPlayFile: (fileID: string) => void;
 }
 
 interface ISceneParams {
@@ -183,6 +186,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     collapsed,
     setCollapsed,
     setContinuePlaylist,
+    selectedFileID,
+    onPlayFile,
   } = props;
 
   const Toast = useToast();
@@ -634,7 +639,11 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
             className="file-info-panel"
             eventKey="scene-file-info-panel"
           >
-            <SceneFileInfoPanel scene={scene} />
+            <SceneFileInfoPanel
+              scene={scene}
+              selectedFileID={selectedFileID}
+              onPlayFile={onPlayFile}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
             <SceneEditPanel
@@ -659,8 +668,10 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const title = objectTitle(scene);
 
   const file = useMemo(
-    () => (scene.files.length > 0 ? scene.files[0] : undefined),
-    [scene]
+    () =>
+      scene.files.find((sceneFile) => sceneFile.id === selectedFileID) ??
+      scene.files[0],
+    [scene.files, selectedFileID]
   );
 
   return (
@@ -792,6 +803,8 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   const [hideScrubber, setHideScrubber] = useState(
     !(configuration?.interface.showScrubber ?? true)
   );
+  const [selectedFileID, setSelectedFileID] = useState<string>();
+  const [selectedFileRequest, setSelectedFileRequest] = useState(0);
 
   const _setTimestamp = useRef<(value: number) => void>();
   const initialTimestamp = useMemo(() => {
@@ -857,6 +870,15 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       getQueueScenes(sceneQueue.sceneIDs);
     }
   }, [sceneQueue]);
+
+  useEffect(() => {
+    setSelectedFileID(scene?.files[0]?.id);
+  }, [scene?.id]);
+
+  const onPlayFile = useCallback((fileID: string) => {
+    setSelectedFileID(fileID);
+    setSelectedFileRequest((request) => request + 1);
+  }, []);
 
   async function onQueueLessScenes() {
     if (!sceneQueue.query || queueStart <= 1) {
@@ -1029,6 +1051,8 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         setContinuePlaylist={setContinuePlaylist}
+        selectedFileID={selectedFileID}
+        onPlayFile={onPlayFile}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
@@ -1042,6 +1066,9 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
           onComplete={onComplete}
           onNext={() => queueNext(true)}
           onPrevious={() => queuePrevious(true)}
+          selectedFileID={selectedFileID}
+          selectedFileRequest={selectedFileRequest}
+          onSelectedFileChange={setSelectedFileID}
         />
       </div>
     </div>

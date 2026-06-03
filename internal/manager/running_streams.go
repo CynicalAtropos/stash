@@ -61,6 +61,26 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 	http.ServeFile(w, r, fp)
 }
 
+func (s *SceneServer) StreamVideoFileDirect(file *models.VideoFile, w http.ResponseWriter, r *http.Request) {
+	if file == nil || file.Path == "" {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
+	fileHash := GetVideoFileHash(file, config.GetInstance().GetVideoFileNamingAlgorithm())
+	fp := file.Path
+	if fileHash != "" {
+		fp = GetInstance().Paths.Scene.GetStreamPath(file.Path, fileHash)
+	}
+
+	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)
+	_ = GetInstance().ReadLockManager.ReadLock(streamRequestCtx, fp)
+	_, filename := filepath.Split(fp)
+	contentDisposition := mime.FormatMediaType("inline", map[string]string{"filename": filename})
+	w.Header().Set("Content-Disposition", contentDisposition)
+	http.ServeFile(w, r, fp)
+}
+
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	var cover []byte
 	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
