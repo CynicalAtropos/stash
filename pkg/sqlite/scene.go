@@ -50,13 +50,14 @@ type sceneRow struct {
 	Date          NullDate    `db:"date"`
 	DatePrecision null.Int    `db:"date_precision"`
 	// expressed as 1-100
-	Rating       null.Int  `db:"rating"`
-	Organized    bool      `db:"organized"`
-	StudioID     null.Int  `db:"studio_id,omitempty"`
-	CreatedAt    Timestamp `db:"created_at"`
-	UpdatedAt    Timestamp `db:"updated_at"`
-	ResumeTime   float64   `db:"resume_time"`
-	PlayDuration float64   `db:"play_duration"`
+	Rating               null.Int  `db:"rating"`
+	Organized            bool      `db:"organized"`
+	PerformerAutotagLock bool      `db:"performer_autotag_lock"`
+	StudioID             null.Int  `db:"studio_id,omitempty"`
+	CreatedAt            Timestamp `db:"created_at"`
+	UpdatedAt            Timestamp `db:"updated_at"`
+	ResumeTime           float64   `db:"resume_time"`
+	PlayDuration         float64   `db:"play_duration"`
 
 	// not used in resolutions or updates
 	CoverBlob zero.String `db:"cover_blob"`
@@ -72,6 +73,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
+	r.PerformerAutotagLock = o.PerformerAutotagLock
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -90,15 +92,16 @@ type sceneQueryRow struct {
 
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Code:      r.Code.String,
-		Details:   r.Details.String,
-		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(r.DatePrecision),
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:                   r.ID,
+		Title:                r.Title.String,
+		Code:                 r.Code.String,
+		Details:              r.Details.String,
+		Director:             r.Director.String,
+		Date:                 r.Date.DatePtr(r.DatePrecision),
+		Rating:               nullIntPtr(r.Rating),
+		Organized:            r.Organized,
+		PerformerAutotagLock: r.PerformerAutotagLock,
+		StudioID:             nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		OSHash:        r.PrimaryFileOshash.String,
@@ -130,6 +133,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
+	r.setBool("performer_autotag_lock", o.PerformerAutotagLock)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)

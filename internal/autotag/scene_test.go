@@ -214,6 +214,24 @@ func TestScenePerformers(t *testing.T) {
 	}
 }
 
+func TestScenePerformersLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	scene := models.Scene{
+		ID:                   1,
+		Path:                 "performer name.mp4",
+		PerformerAutotagLock: true,
+		PerformerIDs:         models.NewRelatedIDs([]int{}),
+	}
+
+	err := ScenePerformers(testCtx, &scene, db.Scene, db.Performer, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
+}
+
 func TestSceneStudios(t *testing.T) {
 	t.Parallel()
 

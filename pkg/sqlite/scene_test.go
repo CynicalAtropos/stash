@@ -77,22 +77,23 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
-		title        = "title"
-		code         = "1337"
-		details      = "details"
-		director     = "director"
-		url          = "url"
-		rating       = 60
-		resumeTime   = 10.0
-		playDuration = 34.0
-		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex   = 123
-		sceneIndex2  = 234
-		endpoint1    = "endpoint1"
-		endpoint2    = "endpoint2"
-		stashID1     = "stashid1"
-		stashID2     = "stashid2"
+		title                = "title"
+		code                 = "1337"
+		details              = "details"
+		director             = "director"
+		url                  = "url"
+		rating               = 60
+		resumeTime           = 10.0
+		playDuration         = 34.0
+		performerAutotagLock = true
+		createdAt            = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt            = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex           = 123
+		sceneIndex2          = 234
+		endpoint1            = "endpoint1"
+		endpoint2            = "endpoint2"
+		stashID1             = "stashid1"
+		stashID2             = "stashid2"
 
 		date, _ = models.ParseDate("2003-02-01")
 
@@ -107,20 +108,21 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"full",
 			models.Scene{
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Director:     director,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Title:                title,
+				Code:                 code,
+				Details:              details,
+				Director:             director,
+				URLs:                 models.NewRelatedStrings([]string{url}),
+				Date:                 &date,
+				Rating:               &rating,
+				Organized:            true,
+				PerformerAutotagLock: performerAutotagLock,
+				StudioID:             &studioIDs[studioIdxWithScene],
+				CreatedAt:            createdAt,
+				UpdatedAt:            updatedAt,
+				GalleryIDs:           models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:               models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
+				PerformerIDs:         models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
 						GroupID:    groupIDs[groupIdxWithScene],
@@ -151,15 +153,16 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"with file",
 			models.Scene{
-				Title:     title,
-				Code:      code,
-				Details:   details,
-				Director:  director,
-				URLs:      models.NewRelatedStrings([]string{url}),
-				Date:      &date,
-				Rating:    &rating,
-				Organized: true,
-				StudioID:  &studioIDs[studioIdxWithScene],
+				Title:                title,
+				Code:                 code,
+				Details:              details,
+				Director:             director,
+				URLs:                 models.NewRelatedStrings([]string{url}),
+				Date:                 &date,
+				Rating:               &rating,
+				Organized:            true,
+				PerformerAutotagLock: performerAutotagLock,
+				StudioID:             &studioIDs[studioIdxWithScene],
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					videoFile.(*models.VideoFile),
 				}),
@@ -311,22 +314,23 @@ func makeSceneFileWithID(i int) *models.VideoFile {
 
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
-		title        = "title"
-		code         = "1337"
-		details      = "details"
-		director     = "director"
-		url          = "url"
-		rating       = 60
-		resumeTime   = 10.0
-		playDuration = 34.0
-		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex   = 123
-		sceneIndex2  = 234
-		endpoint1    = "endpoint1"
-		endpoint2    = "endpoint2"
-		stashID1     = "stashid1"
-		stashID2     = "stashid2"
+		title                = "title"
+		code                 = "1337"
+		details              = "details"
+		director             = "director"
+		url                  = "url"
+		rating               = 60
+		resumeTime           = 10.0
+		playDuration         = 34.0
+		performerAutotagLock = true
+		createdAt            = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt            = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex           = 123
+		sceneIndex2          = 234
+		endpoint1            = "endpoint1"
+		endpoint2            = "endpoint2"
+		stashID1             = "stashid1"
+		stashID2             = "stashid2"
 
 		date, _ = models.ParseDate("2003-02-01")
 	)
@@ -339,21 +343,22 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Scene{
-				ID:           sceneIDs[sceneIdxWithGallery],
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Director:     director,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				ID:                   sceneIDs[sceneIdxWithGallery],
+				Title:                title,
+				Code:                 code,
+				Details:              details,
+				Director:             director,
+				URLs:                 models.NewRelatedStrings([]string{url}),
+				Date:                 &date,
+				Rating:               &rating,
+				Organized:            true,
+				PerformerAutotagLock: performerAutotagLock,
+				StudioID:             &studioIDs[studioIdxWithScene],
+				CreatedAt:            createdAt,
+				UpdatedAt:            updatedAt,
+				GalleryIDs:           models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:               models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
+				PerformerIDs:         models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
 						GroupID:    groupIDs[groupIdxWithScene],
@@ -523,22 +528,23 @@ func clearScenePartial() models.ScenePartial {
 
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title        = "title"
-		code         = "1337"
-		details      = "details"
-		director     = "director"
-		url          = "url"
-		rating       = 60
-		resumeTime   = 10.0
-		playDuration = 34.0
-		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex   = 123
-		sceneIndex2  = 234
-		endpoint1    = "endpoint1"
-		endpoint2    = "endpoint2"
-		stashID1     = "stashid1"
-		stashID2     = "stashid2"
+		title                = "title"
+		code                 = "1337"
+		details              = "details"
+		director             = "director"
+		url                  = "url"
+		rating               = 60
+		resumeTime           = 10.0
+		playDuration         = 34.0
+		performerAutotagLock = true
+		createdAt            = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt            = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex           = 123
+		sceneIndex2          = 234
+		endpoint1            = "endpoint1"
+		endpoint2            = "endpoint2"
+		stashID1             = "stashid1"
+		stashID2             = "stashid2"
 
 		date, _ = models.ParseDate("2003-02-01")
 	)
@@ -562,12 +568,13 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					Values: []string{url},
 					Mode:   models.RelationshipUpdateModeSet,
 				},
-				Date:      models.NewOptionalDate(date),
-				Rating:    models.NewOptionalInt(rating),
-				Organized: models.NewOptionalBool(true),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithScene]),
-				CreatedAt: models.NewOptionalTime(createdAt),
-				UpdatedAt: models.NewOptionalTime(updatedAt),
+				Date:                 models.NewOptionalDate(date),
+				Rating:               models.NewOptionalInt(rating),
+				Organized:            models.NewOptionalBool(true),
+				PerformerAutotagLock: models.NewOptionalBool(performerAutotagLock),
+				StudioID:             models.NewOptionalInt(studioIDs[studioIdxWithScene]),
+				CreatedAt:            models.NewOptionalTime(createdAt),
+				UpdatedAt:            models.NewOptionalTime(updatedAt),
 				GalleryIDs: &models.UpdateIDs{
 					IDs:  []int{galleryIDs[galleryIdxWithScene]},
 					Mode: models.RelationshipUpdateModeSet,
@@ -616,20 +623,21 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Director:     director,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Title:                title,
+				Code:                 code,
+				Details:              details,
+				Director:             director,
+				URLs:                 models.NewRelatedStrings([]string{url}),
+				Date:                 &date,
+				Rating:               &rating,
+				Organized:            true,
+				PerformerAutotagLock: performerAutotagLock,
+				StudioID:             &studioIDs[studioIdxWithScene],
+				CreatedAt:            createdAt,
+				UpdatedAt:            updatedAt,
+				GalleryIDs:           models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:               models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
+				PerformerIDs:         models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
 						GroupID:    groupIDs[groupIdxWithScene],

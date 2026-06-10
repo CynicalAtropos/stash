@@ -17,9 +17,10 @@ type Scene struct {
 	Director string `json:"director"`
 	Date     *Date  `json:"date"`
 	// Rating expressed in 1-100 scale
-	Rating    *int `json:"rating"`
-	Organized bool `json:"organized"`
-	StudioID  *int `json:"studio_id"`
+	Rating               *int `json:"rating"`
+	Organized            bool `json:"organized"`
+	PerformerAutotagLock bool `json:"performer_autotag_lock"`
+	StudioID             *int `json:"studio_id"`
 
 	// transient - not persisted
 	Files         RelatedVideoFiles
@@ -76,13 +77,14 @@ type ScenePartial struct {
 	Director OptionalString
 	Date     OptionalDate
 	// Rating expressed in 1-100 scale
-	Rating       OptionalInt
-	Organized    OptionalBool
-	StudioID     OptionalInt
-	CreatedAt    OptionalTime
-	UpdatedAt    OptionalTime
-	ResumeTime   OptionalFloat64
-	PlayDuration OptionalFloat64
+	Rating               OptionalInt
+	Organized            OptionalBool
+	PerformerAutotagLock OptionalBool
+	StudioID             OptionalInt
+	CreatedAt            OptionalTime
+	UpdatedAt            OptionalTime
+	ResumeTime           OptionalFloat64
+	PlayDuration         OptionalFloat64
 
 	URLs          *UpdateStrings
 	GalleryIDs    *UpdateIDs
@@ -212,21 +214,22 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	}
 
 	ret := SceneUpdateInput{
-		ID:           strconv.Itoa(id),
-		Title:        s.Title.Ptr(),
-		Code:         s.Code.Ptr(),
-		Details:      s.Details.Ptr(),
-		Director:     s.Director.Ptr(),
-		Urls:         s.URLs.Strings(),
-		Date:         dateStr,
-		Rating100:    s.Rating.Ptr(),
-		Organized:    s.Organized.Ptr(),
-		StudioID:     s.StudioID.StringPtr(),
-		GalleryIds:   s.GalleryIDs.IDStrings(),
-		PerformerIds: s.PerformerIDs.IDStrings(),
-		Movies:       s.GroupIDs.SceneMovieInputs(),
-		TagIds:       s.TagIDs.IDStrings(),
-		StashIds:     stashIDs.ToStashIDInputs(),
+		ID:                   strconv.Itoa(id),
+		Title:                s.Title.Ptr(),
+		Code:                 s.Code.Ptr(),
+		Details:              s.Details.Ptr(),
+		Director:             s.Director.Ptr(),
+		Urls:                 s.URLs.Strings(),
+		Date:                 dateStr,
+		Rating100:            s.Rating.Ptr(),
+		Organized:            s.Organized.Ptr(),
+		PerformerAutotagLock: s.PerformerAutotagLock.Ptr(),
+		StudioID:             s.StudioID.StringPtr(),
+		GalleryIds:           s.GalleryIDs.IDStrings(),
+		PerformerIds:         s.PerformerIDs.IDStrings(),
+		Movies:               s.GroupIDs.SceneMovieInputs(),
+		TagIds:               s.TagIDs.IDStrings(),
+		StashIds:             stashIDs.ToStashIDInputs(),
 	}
 
 	return ret

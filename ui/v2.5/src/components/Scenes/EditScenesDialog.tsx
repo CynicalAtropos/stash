@@ -32,6 +32,7 @@ const sceneFields = [
   "rating100",
   "details",
   "organized",
+  "performer_autotag_lock",
   "director",
   "date",
 ];
@@ -278,6 +279,19 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               label={intl.formatMessage({ id: "organized" })}
               setChecked={(checked) => setUpdateField({ organized: checked })}
               checked={updateInput.organized ?? undefined}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="performer_autotag_lock">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({
+                id: "scene.performer_autotag_lock",
+                defaultMessage: "Performer auto-tag lock",
+              })}
+              setChecked={(checked) =>
+                setUpdateField({ performer_autotag_lock: checked })
+              }
+              checked={updateInput.performer_autotag_lock ?? undefined}
             />
           </Form.Group>
         </Form>

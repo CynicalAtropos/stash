@@ -47,10 +47,11 @@ type Scene struct {
 	// deprecated - for import only
 	URL string `json:"url,omitempty"`
 
-	URLs      []string `json:"urls,omitempty"`
-	Date      string   `json:"date,omitempty"`
-	Rating    int      `json:"rating,omitempty"`
-	Organized bool     `json:"organized,omitempty"`
+	URLs                 []string `json:"urls,omitempty"`
+	Date                 string   `json:"date,omitempty"`
+	Rating               int      `json:"rating,omitempty"`
+	Organized            bool     `json:"organized,omitempty"`
+	PerformerAutotagLock bool     `json:"performer_autotag_lock,omitempty"`
 
 	// deprecated - for import only
 	OCounter int `json:"o_counter,omitempty"`

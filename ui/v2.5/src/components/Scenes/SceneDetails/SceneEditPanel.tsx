@@ -147,6 +147,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
+    performer_autotag_lock: yup.boolean().defined(),
     groups: yup
       .array(
         yup.object({
@@ -172,6 +173,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id ?? null,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
+      performer_autotag_lock: scene.performer_autotag_lock ?? false,
       groups: (scene.groups ?? []).map((m) => {
         return { group_id: m.group.id, scene_index: m.scene_index ?? null };
       }),
@@ -696,12 +698,30 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     const title = intl.formatMessage({ id: "performers" });
     const control = (
-      <PerformerSelect
-        isMulti
-        onSelect={onSetPerformers}
-        values={performers}
-        ageFromDate={date}
-      />
+      <>
+        <PerformerSelect
+          isMulti
+          onSelect={onSetPerformers}
+          values={performers}
+          ageFromDate={date}
+        />
+        <Form.Check
+          id="performer_autotag_lock"
+          className="scene-performer-autotag-lock mt-2"
+          type="checkbox"
+          checked={formik.values.performer_autotag_lock}
+          onChange={(e) =>
+            formik.setFieldValue(
+              "performer_autotag_lock",
+              e.currentTarget.checked
+            )
+          }
+          label={intl.formatMessage({
+            id: "scene.performer_autotag_lock",
+            defaultMessage: "Lock performer auto-tagging",
+          })}
+        />
+      </>
     );
 
     return renderField("performer_ids", title, control, fullWidthProps);

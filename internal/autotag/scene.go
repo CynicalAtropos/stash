@@ -36,6 +36,10 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 
 // ScenePerformers tags the provided scene with performers whose name matches the scene's path.
 func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
+	if s.PerformerAutotagLock {
+		return nil
+	}
+
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {

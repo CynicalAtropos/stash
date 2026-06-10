@@ -48,6 +48,8 @@ type Scene {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean!
+  "If true, auto-tag will not add performers to this scene"
+  performer_autotag_lock: Boolean!
   o_counter: Int
   interactive: Boolean!
   interactive_speed: Int
@@ -106,6 +108,8 @@ input SceneCreateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  "If true, auto-tag will not add performers to this scene"
+  performer_autotag_lock: Boolean
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -141,6 +145,8 @@ input SceneUpdateInput {
   o_counter: Int
     @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
   organized: Boolean
+  "If true, auto-tag will not add performers to this scene"
+  performer_autotag_lock: Boolean
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -190,6 +196,8 @@ input BulkSceneUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  "If true, auto-tag will not add performers to these scenes"
+  performer_autotag_lock: Boolean
   studio_id: ID
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds

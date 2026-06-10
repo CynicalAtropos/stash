@@ -50,6 +50,7 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, scene *models.Scene) 
 	}
 
 	newSceneJSON.Organized = scene.Organized
+	newSceneJSON.PerformerAutotagLock = scene.PerformerAutotagLock
 
 	for _, f := range scene.Files.List() {
 		newSceneJSON.Files = append(newSceneJSON.Files, f.Base().Path)

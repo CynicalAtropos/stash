@@ -38,13 +38,14 @@ const (
 )
 
 var (
-	url        = "url"
-	title      = "title"
-	date       = "2001-01-01"
-	dateObj, _ = models.ParseDate(date)
-	rating     = 5
-	organized  = true
-	details    = "details"
+	url                  = "url"
+	title                = "title"
+	date                 = "2001-01-01"
+	dateObj, _           = models.ParseDate(date)
+	rating               = 5
+	organized            = true
+	performerAutotagLock = true
+	details              = "details"
 )
 
 var (
@@ -93,13 +94,14 @@ var (
 
 func createFullScene(id int) models.Scene {
 	return models.Scene{
-		ID:        id,
-		Title:     title,
-		Date:      &dateObj,
-		Details:   details,
-		Rating:    &rating,
-		Organized: organized,
-		URLs:      models.NewRelatedStrings([]string{url}),
+		ID:                   id,
+		Title:                title,
+		Date:                 &dateObj,
+		Details:              details,
+		Rating:               &rating,
+		Organized:            organized,
+		PerformerAutotagLock: performerAutotagLock,
+		URLs:                 models.NewRelatedStrings([]string{url}),
 		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 			{
 				BaseFile: &models.BaseFile{
@@ -134,13 +136,14 @@ func createEmptyScene(id int) models.Scene {
 
 func createFullJSONScene(image string, customFields map[string]interface{}) *jsonschema.Scene {
 	return &jsonschema.Scene{
-		Title:     title,
-		Files:     []string{path},
-		Date:      date,
-		Details:   details,
-		Rating:    rating,
-		Organized: organized,
-		URLs:      []string{url},
+		Title:                title,
+		Files:                []string{path},
+		Date:                 date,
+		Details:              details,
+		Rating:               rating,
+		Organized:            organized,
+		PerformerAutotagLock: performerAutotagLock,
+		URLs:                 []string{url},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

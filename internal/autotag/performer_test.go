@@ -44,6 +44,63 @@ func TestPerformerScenes(t *testing.T) {
 	}
 }
 
+func TestPerformerScenesLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	const performerID = 2
+	const performerName = "performer name"
+
+	performer := models.Performer{
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
+	}
+
+	organized := false
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
+
+	expectedSceneFilter := &models.SceneFilterType{
+		Organized: &organized,
+		Path: &models.StringCriterionInput{
+			Value:    `(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+	}
+
+	expectedFindFilter := &models.FindFilterType{
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	scenes := []*models.Scene{
+		{
+			ID:                   1,
+			Path:                 "performer name.mp4",
+			PerformerAutotagLock: true,
+			PerformerIDs:         models.NewRelatedIDs([]int{}),
+		},
+	}
+
+	db.Scene.On("Query", mock.Anything, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
+		Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
+
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
+	err := tagger.PerformerScenes(testCtx, &performer, nil, db.Scene)
+
+	assert := assert.New(t)
+
+	assert.Nil(err)
+	db.AssertExpectations(t)
+}
+
 func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	db := mocks.NewDatabase()
 

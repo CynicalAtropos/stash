@@ -143,9 +143,13 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 			return nil
 		}
 
-		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaScene: %w", err)
+		var performers []*models.ScrapedPerformer
+		if !scene.PerformerAutotagLock {
+			var err error
+			performers, err = autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaScene: %w", err)
+			}
 		}
 		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
 		if err != nil {
