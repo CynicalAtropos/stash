@@ -51,7 +51,9 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Director = translator.string(input.Director)
 	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
-	newScene.PerformerAutotagLock = translator.bool(input.PerformerAutotagLock)
+	newScene.PerformerAssignmentLock = translator.bool(input.PerformerAssignmentLock)
+	newScene.StudioAssignmentLock = translator.bool(input.StudioAssignmentLock)
+	newScene.TagAssignmentLock = translator.bool(input.TagAssignmentLock)
 	newScene.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	newScene.Date, err = translator.datePtr(input.Date)
@@ -200,7 +202,9 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
-	updatedScene.PerformerAutotagLock = translator.optionalBool(input.PerformerAutotagLock, "performer_autotag_lock")
+	updatedScene.PerformerAssignmentLock = translator.optionalBool(input.PerformerAssignmentLock, "performer_assignment_lock")
+	updatedScene.StudioAssignmentLock = translator.optionalBool(input.StudioAssignmentLock, "studio_assignment_lock")
+	updatedScene.TagAssignmentLock = translator.optionalBool(input.TagAssignmentLock, "tag_assignment_lock")
 	updatedScene.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
 
 	var err error
@@ -374,7 +378,9 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Director = translator.optionalString(input.Director, "director")
 	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
-	updatedScene.PerformerAutotagLock = translator.optionalBool(input.PerformerAutotagLock, "performer_autotag_lock")
+	updatedScene.PerformerAssignmentLock = translator.optionalBool(input.PerformerAssignmentLock, "performer_assignment_lock")
+	updatedScene.StudioAssignmentLock = translator.optionalBool(input.StudioAssignmentLock, "studio_assignment_lock")
+	updatedScene.TagAssignmentLock = translator.optionalBool(input.TagAssignmentLock, "tag_assignment_lock")
 
 	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {

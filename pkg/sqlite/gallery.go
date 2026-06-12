@@ -38,12 +38,15 @@ type galleryRow struct {
 	Details       zero.String `db:"details"`
 	Photographer  zero.String `db:"photographer"`
 	// expressed as 1-100
-	Rating    null.Int  `db:"rating"`
-	Organized bool      `db:"organized"`
-	StudioID  null.Int  `db:"studio_id,omitempty"`
-	FolderID  null.Int  `db:"folder_id,omitempty"`
-	CreatedAt Timestamp `db:"created_at"`
-	UpdatedAt Timestamp `db:"updated_at"`
+	Rating                  null.Int  `db:"rating"`
+	Organized               bool      `db:"organized"`
+	PerformerAssignmentLock bool      `db:"performer_assignment_lock"`
+	StudioAssignmentLock    bool      `db:"studio_assignment_lock"`
+	TagAssignmentLock       bool      `db:"tag_assignment_lock"`
+	StudioID                null.Int  `db:"studio_id,omitempty"`
+	FolderID                null.Int  `db:"folder_id,omitempty"`
+	CreatedAt               Timestamp `db:"created_at"`
+	UpdatedAt               Timestamp `db:"updated_at"`
 }
 
 func (r *galleryRow) fromGallery(o models.Gallery) {
@@ -56,6 +59,9 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
+	r.PerformerAssignmentLock = o.PerformerAssignmentLock
+	r.StudioAssignmentLock = o.StudioAssignmentLock
+	r.TagAssignmentLock = o.TagAssignmentLock
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -73,19 +79,22 @@ type galleryQueryRow struct {
 
 func (r *galleryQueryRow) resolve() *models.Gallery {
 	ret := &models.Gallery{
-		ID:            r.ID,
-		Title:         r.Title.String,
-		Code:          r.Code.String,
-		Date:          r.Date.DatePtr(r.DatePrecision),
-		Details:       r.Details.String,
-		Photographer:  r.Photographer.String,
-		Rating:        nullIntPtr(r.Rating),
-		Organized:     r.Organized,
-		StudioID:      nullIntPtr(r.StudioID),
-		FolderID:      nullIntFolderIDPtr(r.FolderID),
-		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
+		ID:                      r.ID,
+		Title:                   r.Title.String,
+		Code:                    r.Code.String,
+		Date:                    r.Date.DatePtr(r.DatePrecision),
+		Details:                 r.Details.String,
+		Photographer:            r.Photographer.String,
+		Rating:                  nullIntPtr(r.Rating),
+		Organized:               r.Organized,
+		PerformerAssignmentLock: r.PerformerAssignmentLock,
+		StudioAssignmentLock:    r.StudioAssignmentLock,
+		TagAssignmentLock:       r.TagAssignmentLock,
+		StudioID:                nullIntPtr(r.StudioID),
+		FolderID:                nullIntFolderIDPtr(r.FolderID),
+		PrimaryFileID:           nullIntFileIDPtr(r.PrimaryFileID),
+		CreatedAt:               r.CreatedAt.Timestamp,
+		UpdatedAt:               r.UpdatedAt.Timestamp,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -109,6 +118,9 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
+	r.setBool("performer_assignment_lock", o.PerformerAssignmentLock)
+	r.setBool("studio_assignment_lock", o.StudioAssignmentLock)
+	r.setBool("tag_assignment_lock", o.TagAssignmentLock)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)

@@ -72,23 +72,26 @@ type ImageFilterType struct {
 }
 
 type ImageUpdateInput struct {
-	ClientMutationID *string            `json:"clientMutationId"`
-	ID               string             `json:"id"`
-	Title            *string            `json:"title"`
-	Code             *string            `json:"code"`
-	Urls             []string           `json:"urls"`
-	Date             *string            `json:"date"`
-	Details          *string            `json:"details"`
-	Photographer     *string            `json:"photographer"`
-	Rating100        *int               `json:"rating100"`
-	Organized        *bool              `json:"organized"`
-	SceneIds         []string           `json:"scene_ids"`
-	StudioID         *string            `json:"studio_id"`
-	TagIds           []string           `json:"tag_ids"`
-	PerformerIds     []string           `json:"performer_ids"`
-	GalleryIds       []string           `json:"gallery_ids"`
-	PrimaryFileID    *string            `json:"primary_file_id"`
-	CustomFields     *CustomFieldsInput `json:"custom_fields"`
+	ClientMutationID        *string            `json:"clientMutationId"`
+	ID                      string             `json:"id"`
+	Title                   *string            `json:"title"`
+	Code                    *string            `json:"code"`
+	Urls                    []string           `json:"urls"`
+	Date                    *string            `json:"date"`
+	Details                 *string            `json:"details"`
+	Photographer            *string            `json:"photographer"`
+	Rating100               *int               `json:"rating100"`
+	Organized               *bool              `json:"organized"`
+	PerformerAssignmentLock *bool              `json:"performer_assignment_lock"`
+	StudioAssignmentLock    *bool              `json:"studio_assignment_lock"`
+	TagAssignmentLock       *bool              `json:"tag_assignment_lock"`
+	SceneIds                []string           `json:"scene_ids"`
+	StudioID                *string            `json:"studio_id"`
+	TagIds                  []string           `json:"tag_ids"`
+	PerformerIds            []string           `json:"performer_ids"`
+	GalleryIds              []string           `json:"gallery_ids"`
+	PrimaryFileID           *string            `json:"primary_file_id"`
+	CustomFields            *CustomFieldsInput `json:"custom_fields"`
 
 	// deprecated
 	URL *string `json:"url"`

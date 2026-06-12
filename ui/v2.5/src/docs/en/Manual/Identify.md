@@ -14,6 +14,12 @@ This task is part of the advanced settings mode.
 
 Scenes that have the Organized flag added to them will not be modified by Identify. You can also use Organized flag status as a filter.
 
+### Assignment locks
+
+Scenes can lock their Performer, Studio, and Tag relationships from Identify independently. When a relationship is locked, Identify will skip that relationship type while still allowing unlocked relationships and other scene fields to be updated.
+
+The Tag lock also prevents Identify from adding tags for skipped multiple matches or skipped single-name performers.
+
 ## Options
 
 The following options can be configured:

@@ -113,6 +113,9 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input models.ImageUp
 	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
 	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+	updatedImage.PerformerAssignmentLock = translator.optionalBool(input.PerformerAssignmentLock, "performer_assignment_lock")
+	updatedImage.StudioAssignmentLock = translator.optionalBool(input.StudioAssignmentLock, "studio_assignment_lock")
+	updatedImage.TagAssignmentLock = translator.optionalBool(input.TagAssignmentLock, "tag_assignment_lock")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
@@ -219,6 +222,9 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
 	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+	updatedImage.PerformerAssignmentLock = translator.optionalBool(input.PerformerAssignmentLock, "performer_assignment_lock")
+	updatedImage.StudioAssignmentLock = translator.optionalBool(input.StudioAssignmentLock, "studio_assignment_lock")
+	updatedImage.TagAssignmentLock = translator.optionalBool(input.TagAssignmentLock, "tag_assignment_lock")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {

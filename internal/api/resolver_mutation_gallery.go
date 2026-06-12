@@ -53,6 +53,9 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery.Photographer = translator.string(input.Photographer)
 	newGallery.Rating = input.Rating100
 	newGallery.Organized = translator.bool(input.Organized)
+	newGallery.PerformerAssignmentLock = translator.bool(input.PerformerAssignmentLock)
+	newGallery.StudioAssignmentLock = translator.bool(input.StudioAssignmentLock)
+	newGallery.TagAssignmentLock = translator.bool(input.TagAssignmentLock)
 
 	var err error
 
@@ -197,6 +200,9 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	updatedGallery.Photographer = translator.optionalString(input.Photographer, "photographer")
 	updatedGallery.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+	updatedGallery.PerformerAssignmentLock = translator.optionalBool(input.PerformerAssignmentLock, "performer_assignment_lock")
+	updatedGallery.StudioAssignmentLock = translator.optionalBool(input.StudioAssignmentLock, "studio_assignment_lock")
+	updatedGallery.TagAssignmentLock = translator.optionalBool(input.TagAssignmentLock, "tag_assignment_lock")
 
 	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
@@ -278,6 +284,9 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	updatedGallery.Photographer = translator.optionalString(input.Photographer, "photographer")
 	updatedGallery.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+	updatedGallery.PerformerAssignmentLock = translator.optionalBool(input.PerformerAssignmentLock, "performer_assignment_lock")
+	updatedGallery.StudioAssignmentLock = translator.optionalBool(input.StudioAssignmentLock, "studio_assignment_lock")
+	updatedGallery.TagAssignmentLock = translator.optionalBool(input.TagAssignmentLock, "tag_assignment_lock")
 	updatedGallery.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")

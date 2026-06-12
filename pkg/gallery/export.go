@@ -39,6 +39,9 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	}
 
 	newGalleryJSON.Organized = gallery.Organized
+	newGalleryJSON.PerformerAssignmentLock = gallery.PerformerAssignmentLock
+	newGalleryJSON.StudioAssignmentLock = gallery.StudioAssignmentLock
+	newGalleryJSON.TagAssignmentLock = gallery.TagAssignmentLock
 
 	return &newGalleryJSON, nil
 }

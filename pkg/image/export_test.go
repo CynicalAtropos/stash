@@ -22,13 +22,16 @@ const (
 )
 
 var (
-	title      = "title"
-	rating     = 5
-	url        = "http://a.com"
-	date       = "2001-01-01"
-	dateObj, _ = models.ParseDate(date)
-	organized  = true
-	ocounter   = 2
+	title                   = "title"
+	rating                  = 5
+	url                     = "http://a.com"
+	date                    = "2001-01-01"
+	dateObj, _              = models.ParseDate(date)
+	organized               = true
+	performerAssignmentLock = true
+	studioAssignmentLock    = true
+	tagAssignmentLock       = true
+	ocounter                = 2
 
 	customFields = map[string]interface{}{
 		"customField1": "customValue1",
@@ -53,26 +56,32 @@ func createFullImage(id int) models.Image {
 				Path: path,
 			},
 		}),
-		Title:     title,
-		OCounter:  ocounter,
-		Rating:    &rating,
-		Date:      &dateObj,
-		URLs:      models.NewRelatedStrings([]string{url}),
-		Organized: organized,
-		CreatedAt: createTime,
-		UpdatedAt: updateTime,
+		Title:                   title,
+		OCounter:                ocounter,
+		Rating:                  &rating,
+		Date:                    &dateObj,
+		URLs:                    models.NewRelatedStrings([]string{url}),
+		Organized:               organized,
+		PerformerAssignmentLock: performerAssignmentLock,
+		StudioAssignmentLock:    studioAssignmentLock,
+		TagAssignmentLock:       tagAssignmentLock,
+		CreatedAt:               createTime,
+		UpdatedAt:               updateTime,
 	}
 }
 
 func createFullJSONImage(customFields map[string]interface{}) *jsonschema.Image {
 	return &jsonschema.Image{
-		Title:     title,
-		OCounter:  ocounter,
-		Rating:    rating,
-		Date:      date,
-		URLs:      []string{url},
-		Organized: organized,
-		Files:     []string{path},
+		Title:                   title,
+		OCounter:                ocounter,
+		Rating:                  rating,
+		Date:                    date,
+		URLs:                    []string{url},
+		Organized:               organized,
+		PerformerAssignmentLock: performerAssignmentLock,
+		StudioAssignmentLock:    studioAssignmentLock,
+		TagAssignmentLock:       tagAssignmentLock,
+		Files:                   []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

@@ -91,6 +91,9 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	}
 
 	newGallery.Organized = galleryJSON.Organized
+	newGallery.PerformerAssignmentLock = galleryJSON.PerformerAssignmentLock
+	newGallery.StudioAssignmentLock = galleryJSON.StudioAssignmentLock
+	newGallery.TagAssignmentLock = galleryJSON.TagAssignmentLock
 	newGallery.CreatedAt = galleryJSON.CreatedAt.GetTime()
 	newGallery.UpdatedAt = galleryJSON.UpdatedAt.GetTime()
 

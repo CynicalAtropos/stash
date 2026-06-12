@@ -79,10 +79,10 @@ func TestPerformerScenesLocked(t *testing.T) {
 
 	scenes := []*models.Scene{
 		{
-			ID:                   1,
-			Path:                 "performer name.mp4",
-			PerformerAutotagLock: true,
-			PerformerIDs:         models.NewRelatedIDs([]int{}),
+			ID:                      1,
+			Path:                    "performer name.mp4",
+			PerformerAssignmentLock: true,
+			PerformerIDs:            models.NewRelatedIDs([]int{}),
 		},
 	}
 
@@ -196,6 +196,63 @@ func TestPerformerImages(t *testing.T) {
 	}
 }
 
+func TestPerformerImagesLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	const performerID = 2
+	const performerName = "performer name"
+
+	performer := models.Performer{
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
+	}
+
+	organized := false
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
+
+	expectedImageFilter := &models.ImageFilterType{
+		Organized: &organized,
+		Path: &models.StringCriterionInput{
+			Value:    `(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+	}
+
+	expectedFindFilter := &models.FindFilterType{
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	images := []*models.Image{
+		{
+			ID:                      1,
+			Path:                    "performer name.jpg",
+			PerformerAssignmentLock: true,
+			PerformerIDs:            models.NewRelatedIDs([]int{}),
+		},
+	}
+
+	db.Image.On("Query", mock.Anything, image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
+		Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
+
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
+	err := tagger.PerformerImages(testCtx, &performer, nil, db.Image)
+
+	assert := assert.New(t)
+
+	assert.Nil(err)
+	db.AssertExpectations(t)
+}
+
 func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	db := mocks.NewDatabase()
 
@@ -289,6 +346,63 @@ func TestPerformerGalleries(t *testing.T) {
 	for _, p := range performerNames {
 		testPerformerGalleries(t, p.performerName, p.expectedRegex)
 	}
+}
+
+func TestPerformerGalleriesLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	const performerID = 2
+	const performerName = "performer name"
+
+	performer := models.Performer{
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
+	}
+
+	organized := false
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
+
+	expectedGalleryFilter := &models.GalleryFilterType{
+		Organized: &organized,
+		Path: &models.StringCriterionInput{
+			Value:    `(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+	}
+
+	expectedFindFilter := &models.FindFilterType{
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	galleries := []*models.Gallery{
+		{
+			ID:                      1,
+			Path:                    "performer name.zip",
+			PerformerAssignmentLock: true,
+			PerformerIDs:            models.NewRelatedIDs([]int{}),
+		},
+	}
+
+	db.Gallery.On("Query", mock.Anything, expectedGalleryFilter, expectedFindFilter).
+		Return(galleries, len(galleries), nil).Once()
+
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
+	err := tagger.PerformerGalleries(testCtx, &performer, nil, db.Gallery)
+
+	assert := assert.New(t)
+
+	assert.Nil(err)
+	db.AssertExpectations(t)
 }
 
 func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {

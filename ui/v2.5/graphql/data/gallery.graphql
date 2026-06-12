@@ -10,6 +10,9 @@ fragment GalleryData on Gallery {
   photographer
   rating100
   organized
+  performer_assignment_lock
+  studio_assignment_lock
+  tag_assignment_lock
 
   paths {
     cover

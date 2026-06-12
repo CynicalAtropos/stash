@@ -44,19 +44,21 @@ var testCtx = context.Background()
 
 func TestImporterPreImport(t *testing.T) {
 	var (
-		title                = "title"
-		code                 = "code"
-		details              = "details"
-		director             = "director"
-		endpoint1            = "endpoint1"
-		stashID1             = "stashID1"
-		endpoint2            = "endpoint2"
-		stashID2             = "stashID2"
-		url1                 = "url1"
-		url2                 = "url2"
-		rating               = 3
-		organized            = true
-		performerAutotagLock = true
+		title                   = "title"
+		code                    = "code"
+		details                 = "details"
+		director                = "director"
+		endpoint1               = "endpoint1"
+		stashID1                = "stashID1"
+		endpoint2               = "endpoint2"
+		stashID2                = "stashID2"
+		url1                    = "url1"
+		url2                    = "url2"
+		rating                  = 3
+		organized               = true
+		performerAssignmentLock = true
+		studioAssignmentLock    = true
+		tagAssignmentLock       = true
 
 		createdAt = time.Now().Add(-time.Hour)
 		updatedAt = time.Now().Add(-time.Minute)
@@ -80,14 +82,16 @@ func TestImporterPreImport(t *testing.T) {
 					{Endpoint: endpoint1, StashID: stashID1},
 					{Endpoint: endpoint2, StashID: stashID2},
 				},
-				URLs:                 []string{url1, url2},
-				Rating:               rating,
-				Organized:            organized,
-				PerformerAutotagLock: performerAutotagLock,
-				CreatedAt:            json.JSONTime{Time: createdAt},
-				UpdatedAt:            json.JSONTime{Time: updatedAt},
-				ResumeTime:           resumeTime,
-				PlayDuration:         playDuration,
+				URLs:                    []string{url1, url2},
+				Rating:                  rating,
+				Organized:               organized,
+				PerformerAssignmentLock: performerAssignmentLock,
+				StudioAssignmentLock:    studioAssignmentLock,
+				TagAssignmentLock:       tagAssignmentLock,
+				CreatedAt:               json.JSONTime{Time: createdAt},
+				UpdatedAt:               json.JSONTime{Time: updatedAt},
+				ResumeTime:              resumeTime,
+				PlayDuration:            playDuration,
 			},
 			models.Scene{
 				Title:    title,
@@ -98,14 +102,16 @@ func TestImporterPreImport(t *testing.T) {
 					{Endpoint: endpoint1, StashID: stashID1},
 					{Endpoint: endpoint2, StashID: stashID2},
 				}),
-				URLs:                 models.NewRelatedStrings([]string{url1, url2}),
-				Rating:               &rating,
-				Organized:            organized,
-				PerformerAutotagLock: performerAutotagLock,
-				CreatedAt:            createdAt.Truncate(0),
-				UpdatedAt:            updatedAt.Truncate(0),
-				ResumeTime:           resumeTime,
-				PlayDuration:         playDuration,
+				URLs:                    models.NewRelatedStrings([]string{url1, url2}),
+				Rating:                  &rating,
+				Organized:               organized,
+				PerformerAssignmentLock: performerAssignmentLock,
+				StudioAssignmentLock:    studioAssignmentLock,
+				TagAssignmentLock:       tagAssignmentLock,
+				CreatedAt:               createdAt.Truncate(0),
+				UpdatedAt:               updatedAt.Truncate(0),
+				ResumeTime:              resumeTime,
+				PlayDuration:            playDuration,
 
 				Files:        models.NewRelatedVideoFiles([]*models.VideoFile{}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),

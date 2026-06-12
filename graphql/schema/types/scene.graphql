@@ -49,7 +49,11 @@ type Scene {
   rating100: Int
   organized: Boolean!
   "If true, auto-tag will not add performers to this scene"
-  performer_autotag_lock: Boolean!
+  performer_assignment_lock: Boolean!
+  "If true, auto-tag will not set the studio on this scene"
+  studio_assignment_lock: Boolean!
+  "If true, auto-tag will not add tags to this scene"
+  tag_assignment_lock: Boolean!
   o_counter: Int
   interactive: Boolean!
   interactive_speed: Int
@@ -109,7 +113,11 @@ input SceneCreateInput {
   rating100: Int
   organized: Boolean
   "If true, auto-tag will not add performers to this scene"
-  performer_autotag_lock: Boolean
+  performer_assignment_lock: Boolean
+  "If true, auto-tag will not set the studio on this scene"
+  studio_assignment_lock: Boolean
+  "If true, auto-tag will not add tags to this scene"
+  tag_assignment_lock: Boolean
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -146,7 +154,11 @@ input SceneUpdateInput {
     @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
   organized: Boolean
   "If true, auto-tag will not add performers to this scene"
-  performer_autotag_lock: Boolean
+  performer_assignment_lock: Boolean
+  "If true, auto-tag will not set the studio on this scene"
+  studio_assignment_lock: Boolean
+  "If true, auto-tag will not add tags to this scene"
+  tag_assignment_lock: Boolean
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -197,7 +209,11 @@ input BulkSceneUpdateInput {
   rating100: Int
   organized: Boolean
   "If true, auto-tag will not add performers to these scenes"
-  performer_autotag_lock: Boolean
+  performer_assignment_lock: Boolean
+  "If true, auto-tag will not set the studio on these scenes"
+  studio_assignment_lock: Boolean
+  "If true, auto-tag will not add tags to these scenes"
+  tag_assignment_lock: Boolean
   studio_id: ID
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds

@@ -16,9 +16,12 @@ type Gallery struct {
 	Details      string `json:"details"`
 	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
-	Rating    *int `json:"rating"`
-	Organized bool `json:"organized"`
-	StudioID  *int `json:"studio_id"`
+	Rating                  *int `json:"rating"`
+	Organized               bool `json:"organized"`
+	PerformerAssignmentLock bool `json:"performer_assignment_lock"`
+	StudioAssignmentLock    bool `json:"studio_assignment_lock"`
+	TagAssignmentLock       bool `json:"tag_assignment_lock"`
+	StudioID                *int `json:"studio_id"`
 
 	// transient - not persisted
 	Files RelatedFiles
@@ -73,9 +76,12 @@ type GalleryPartial struct {
 	Details      OptionalString
 	Photographer OptionalString
 	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	Organized OptionalBool
-	StudioID  OptionalInt
+	Rating                  OptionalInt
+	Organized               OptionalBool
+	PerformerAssignmentLock OptionalBool
+	StudioAssignmentLock    OptionalBool
+	TagAssignmentLock       OptionalBool
+	StudioID                OptionalInt
 	// FileModTime OptionalTime
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime

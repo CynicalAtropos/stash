@@ -220,10 +220,10 @@ func TestScenePerformersLocked(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	scene := models.Scene{
-		ID:                   1,
-		Path:                 "performer name.mp4",
-		PerformerAutotagLock: true,
-		PerformerIDs:         models.NewRelatedIDs([]int{}),
+		ID:                      1,
+		Path:                    "performer name.mp4",
+		PerformerAssignmentLock: true,
+		PerformerIDs:            models.NewRelatedIDs([]int{}),
 	}
 
 	err := ScenePerformers(testCtx, &scene, db.Scene, db.Performer, nil)
@@ -306,6 +306,23 @@ func TestSceneStudios(t *testing.T) {
 	}
 }
 
+func TestSceneStudiosLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	scene := models.Scene{
+		ID:                   1,
+		Path:                 "studio name.mp4",
+		StudioAssignmentLock: true,
+	}
+
+	err := SceneStudios(testCtx, &scene, db.Scene, db.Studio, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
+}
+
 func TestSceneTags(t *testing.T) {
 	t.Parallel()
 
@@ -380,4 +397,22 @@ func TestSceneTags(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestSceneTagsLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	scene := models.Scene{
+		ID:                1,
+		Path:              "tag name.mp4",
+		TagAssignmentLock: true,
+		TagIDs:            models.NewRelatedIDs([]int{}),
+	}
+
+	err := SceneTags(testCtx, &scene, db.Scene, db.Tag, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
 }

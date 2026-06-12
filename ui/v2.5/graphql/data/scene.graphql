@@ -9,7 +9,9 @@ fragment SceneData on Scene {
   rating100
   o_counter
   organized
-  performer_autotag_lock
+  performer_assignment_lock
+  studio_assignment_lock
+  tag_assignment_lock
   interactive
   interactive_speed
   captions {

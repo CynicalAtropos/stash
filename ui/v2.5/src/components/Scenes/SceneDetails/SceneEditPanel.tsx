@@ -20,6 +20,7 @@ import {
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
+import { AssignmentLockButton } from "src/components/Shared/AssignmentLockButton";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { useToast } from "src/hooks/Toast";
@@ -147,7 +148,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
-    performer_autotag_lock: yup.boolean().defined(),
+    performer_assignment_lock: yup.boolean().defined(),
+    studio_assignment_lock: yup.boolean().defined(),
+    tag_assignment_lock: yup.boolean().defined(),
     groups: yup
       .array(
         yup.object({
@@ -173,7 +176,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id ?? null,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
-      performer_autotag_lock: scene.performer_autotag_lock ?? false,
+      performer_assignment_lock: scene.performer_assignment_lock ?? false,
+      studio_assignment_lock: scene.studio_assignment_lock ?? false,
+      tag_assignment_lock: scene.tag_assignment_lock ?? false,
       groups: (scene.groups ?? []).map((m) => {
         return { group_id: m.group.id, scene_index: m.scene_index ?? null };
       }),
@@ -490,7 +495,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", updatedScene.urls);
     }
 
-    if (updatedScene.studio?.stored_id) {
+    if (
+      !formik.values.studio_assignment_lock &&
+      updatedScene.studio?.stored_id
+    ) {
       onSetStudio({
         id: updatedScene.studio.stored_id,
         name: updatedScene.studio.name ?? "",
@@ -498,7 +506,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
     }
 
-    if (updatedScene.performers && updatedScene.performers.length > 0) {
+    if (
+      !formik.values.performer_assignment_lock &&
+      updatedScene.performers &&
+      updatedScene.performers.length > 0
+    ) {
       const idPerfs = updatedScene.performers.filter((p) => {
         return p.stored_id !== undefined && p.stored_id !== null;
       });
@@ -533,7 +545,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }
     }
 
-    updateTagsStateFromScraper(updatedScene.tags ?? undefined);
+    if (!formik.values.tag_assignment_lock) {
+      updateTagsStateFromScraper(updatedScene.tags ?? undefined);
+    }
 
     if (updatedScene.image) {
       // image is a base64 string
@@ -677,6 +691,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
+    const lockLabel = intl.formatMessage({
+      id: "scene.studio_assignment_lock",
+      defaultMessage: "Lock Automated Studio Updates",
+    });
     const control = (
       <StudioSelect
         onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
@@ -684,7 +702,21 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField("studio_id", title, control, {
+      labelControl: (
+        <AssignmentLockButton
+          locked={formik.values.studio_assignment_lock}
+          label={lockLabel}
+          className="label-control ml-1"
+          onToggle={() =>
+            formik.setFieldValue(
+              "studio_assignment_lock",
+              !formik.values.studio_assignment_lock
+            )
+          }
+        />
+      ),
+    });
   }
 
   function renderPerformersField() {
@@ -697,34 +729,35 @@ export const SceneEditPanel: React.FC<IProps> = ({
     })();
 
     const title = intl.formatMessage({ id: "performers" });
+    const lockLabel = intl.formatMessage({
+      id: "scene.performer_assignment_lock",
+      defaultMessage: "Lock Automated Performer Updates",
+    });
     const control = (
-      <>
-        <PerformerSelect
-          isMulti
-          onSelect={onSetPerformers}
-          values={performers}
-          ageFromDate={date}
-        />
-        <Form.Check
-          id="performer_autotag_lock"
-          className="scene-performer-autotag-lock mt-2"
-          type="checkbox"
-          checked={formik.values.performer_autotag_lock}
-          onChange={(e) =>
-            formik.setFieldValue(
-              "performer_autotag_lock",
-              e.currentTarget.checked
-            )
-          }
-          label={intl.formatMessage({
-            id: "scene.performer_autotag_lock",
-            defaultMessage: "Lock performer auto-tagging",
-          })}
-        />
-      </>
+      <PerformerSelect
+        isMulti
+        onSelect={onSetPerformers}
+        values={performers}
+        ageFromDate={date}
+      />
     );
 
-    return renderField("performer_ids", title, control, fullWidthProps);
+    return renderField("performer_ids", title, control, {
+      ...fullWidthProps,
+      labelControl: (
+        <AssignmentLockButton
+          locked={formik.values.performer_assignment_lock}
+          label={lockLabel}
+          className="label-control ml-1"
+          onToggle={() =>
+            formik.setFieldValue(
+              "performer_assignment_lock",
+              !formik.values.performer_assignment_lock
+            )
+          }
+        />
+      ),
+    });
   }
 
   function onSetGroupEntries(input: IGroupEntry[]) {
@@ -749,7 +782,28 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    const lockLabel = intl.formatMessage({
+      id: "scene.tag_assignment_lock",
+      defaultMessage: "Lock Automated Tag Updates",
+    });
+    const control = tagsControl();
+
+    return renderField("tag_ids", title, control, {
+      ...fullWidthProps,
+      labelControl: (
+        <AssignmentLockButton
+          locked={formik.values.tag_assignment_lock}
+          label={lockLabel}
+          className="label-control ml-1"
+          onToggle={() =>
+            formik.setFieldValue(
+              "tag_assignment_lock",
+              !formik.values.tag_assignment_lock
+            )
+          }
+        />
+      ),
+    });
   }
 
   function renderDetailsField() {

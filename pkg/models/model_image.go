@@ -16,12 +16,15 @@ type Image struct {
 	Details      string `json:"details"`
 	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
-	Rating    *int           `json:"rating"`
-	Organized bool           `json:"organized"`
-	OCounter  int            `json:"o_counter"`
-	StudioID  *int           `json:"studio_id"`
-	URLs      RelatedStrings `json:"urls"`
-	Date      *Date          `json:"date"`
+	Rating                  *int           `json:"rating"`
+	Organized               bool           `json:"organized"`
+	PerformerAssignmentLock bool           `json:"performer_assignment_lock"`
+	StudioAssignmentLock    bool           `json:"studio_assignment_lock"`
+	TagAssignmentLock       bool           `json:"tag_assignment_lock"`
+	OCounter                int            `json:"o_counter"`
+	StudioID                *int           `json:"studio_id"`
+	URLs                    RelatedStrings `json:"urls"`
+	Date                    *Date          `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedFiles
@@ -58,16 +61,19 @@ type ImagePartial struct {
 	Title OptionalString
 	Code  OptionalString
 	// Rating expressed in 1-100 scale
-	Rating       OptionalInt
-	URLs         *UpdateStrings
-	Date         OptionalDate
-	Details      OptionalString
-	Photographer OptionalString
-	Organized    OptionalBool
-	OCounter     OptionalInt
-	StudioID     OptionalInt
-	CreatedAt    OptionalTime
-	UpdatedAt    OptionalTime
+	Rating                  OptionalInt
+	URLs                    *UpdateStrings
+	Date                    OptionalDate
+	Details                 OptionalString
+	Photographer            OptionalString
+	Organized               OptionalBool
+	PerformerAssignmentLock OptionalBool
+	StudioAssignmentLock    OptionalBool
+	TagAssignmentLock       OptionalBool
+	OCounter                OptionalInt
+	StudioID                OptionalInt
+	CreatedAt               OptionalTime
+	UpdatedAt               OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs

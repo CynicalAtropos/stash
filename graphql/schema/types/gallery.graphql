@@ -16,6 +16,12 @@ type Gallery {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean!
+  "If true, auto-tag will not add performers to this gallery"
+  performer_assignment_lock: Boolean!
+  "If true, auto-tag will not set the studio on this gallery"
+  studio_assignment_lock: Boolean!
+  "If true, auto-tag will not add tags to this gallery"
+  tag_assignment_lock: Boolean!
   created_at: Time!
   updated_at: Time!
 
@@ -47,6 +53,12 @@ input GalleryCreateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  "If true, auto-tag will not add performers to this gallery"
+  performer_assignment_lock: Boolean
+  "If true, auto-tag will not set the studio on this gallery"
+  studio_assignment_lock: Boolean
+  "If true, auto-tag will not add tags to this gallery"
+  tag_assignment_lock: Boolean
   scene_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
@@ -68,6 +80,12 @@ input GalleryUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  "If true, auto-tag will not add performers to this gallery"
+  performer_assignment_lock: Boolean
+  "If true, auto-tag will not set the studio on this gallery"
+  studio_assignment_lock: Boolean
+  "If true, auto-tag will not add tags to this gallery"
+  tag_assignment_lock: Boolean
   scene_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
@@ -90,6 +108,12 @@ input BulkGalleryUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  "If true, auto-tag will not add performers to these galleries"
+  performer_assignment_lock: Boolean
+  "If true, auto-tag will not set the studio on these galleries"
+  studio_assignment_lock: Boolean
+  "If true, auto-tag will not add tags to these galleries"
+  tag_assignment_lock: Boolean
   scene_ids: BulkUpdateIds
   studio_id: ID
   tag_ids: BulkUpdateIds

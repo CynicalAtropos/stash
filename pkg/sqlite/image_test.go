@@ -57,16 +57,17 @@ func loadImageRelationships(ctx context.Context, expected models.Image, actual *
 
 func Test_imageQueryBuilder_Create(t *testing.T) {
 	var (
-		title        = "title"
-		code         = "code"
-		rating       = 60
-		details      = "details"
-		photographer = "photographer"
-		ocounter     = 5
-		url          = "url"
-		date, _      = models.ParseDate("2003-02-01")
-		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title                   = "title"
+		code                    = "code"
+		rating                  = 60
+		details                 = "details"
+		photographer            = "photographer"
+		ocounter                = 5
+		performerAssignmentLock = true
+		url                     = "url"
+		date, _                 = models.ParseDate("2003-02-01")
+		createdAt               = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt               = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		imageFile = makeFileWithID(fileIdxStartImageFiles)
 	)
@@ -80,21 +81,24 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.CreateImageInput{
 				Image: &models.Image{
-					Title:        title,
-					Code:         code,
-					Rating:       &rating,
-					Date:         &date,
-					Details:      details,
-					Photographer: photographer,
-					URLs:         models.NewRelatedStrings([]string{url}),
-					Organized:    true,
-					OCounter:     ocounter,
-					StudioID:     &studioIDs[studioIdxWithImage],
-					CreatedAt:    createdAt,
-					UpdatedAt:    updatedAt,
-					GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-					TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
-					PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+					Title:                   title,
+					Code:                    code,
+					Rating:                  &rating,
+					Date:                    &date,
+					Details:                 details,
+					Photographer:            photographer,
+					URLs:                    models.NewRelatedStrings([]string{url}),
+					Organized:               true,
+					PerformerAssignmentLock: performerAssignmentLock,
+					StudioAssignmentLock:    testStudioAssignmentLock,
+					TagAssignmentLock:       testTagAssignmentLock,
+					OCounter:                ocounter,
+					StudioID:                &studioIDs[studioIdxWithImage],
+					CreatedAt:               createdAt,
+					UpdatedAt:               updatedAt,
+					GalleryIDs:              models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+					TagIDs:                  models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
+					PerformerIDs:            models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 				},
 				CustomFields: testCustomFields,
 			},
@@ -104,16 +108,19 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			"with file",
 			models.CreateImageInput{
 				Image: &models.Image{
-					Title:        title,
-					Code:         code,
-					Rating:       &rating,
-					Date:         &date,
-					Details:      details,
-					Photographer: photographer,
-					URLs:         models.NewRelatedStrings([]string{url}),
-					Organized:    true,
-					OCounter:     ocounter,
-					StudioID:     &studioIDs[studioIdxWithImage],
+					Title:                   title,
+					Code:                    code,
+					Rating:                  &rating,
+					Date:                    &date,
+					Details:                 details,
+					Photographer:            photographer,
+					URLs:                    models.NewRelatedStrings([]string{url}),
+					Organized:               true,
+					PerformerAssignmentLock: performerAssignmentLock,
+					StudioAssignmentLock:    testStudioAssignmentLock,
+					TagAssignmentLock:       testTagAssignmentLock,
+					OCounter:                ocounter,
+					StudioID:                &studioIDs[studioIdxWithImage],
 					Files: models.NewRelatedFiles([]models.File{
 						imageFile.(*models.ImageFile),
 					}),
@@ -237,16 +244,17 @@ func makeImageFileWithID(i int) *models.ImageFile {
 
 func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
-		title        = "title"
-		code         = "code"
-		rating       = 60
-		url          = "url"
-		details      = "details"
-		photographer = "photographer"
-		date, _      = models.ParseDate("2003-02-01")
-		ocounter     = 5
-		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title                   = "title"
+		code                    = "code"
+		rating                  = 60
+		url                     = "url"
+		details                 = "details"
+		photographer            = "photographer"
+		date, _                 = models.ParseDate("2003-02-01")
+		ocounter                = 5
+		performerAssignmentLock = true
+		createdAt               = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt               = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -257,22 +265,25 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Image{
-				ID:           imageIDs[imageIdxWithGallery],
-				Title:        title,
-				Code:         code,
-				Rating:       &rating,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Details:      details,
-				Photographer: photographer,
-				Organized:    true,
-				OCounter:     ocounter,
-				StudioID:     &studioIDs[studioIdxWithImage],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+				ID:                      imageIDs[imageIdxWithGallery],
+				Title:                   title,
+				Code:                    code,
+				Rating:                  &rating,
+				URLs:                    models.NewRelatedStrings([]string{url}),
+				Date:                    &date,
+				Details:                 details,
+				Photographer:            photographer,
+				Organized:               true,
+				PerformerAssignmentLock: performerAssignmentLock,
+				StudioAssignmentLock:    testStudioAssignmentLock,
+				TagAssignmentLock:       testTagAssignmentLock,
+				OCounter:                ocounter,
+				StudioID:                &studioIDs[studioIdxWithImage],
+				CreatedAt:               createdAt,
+				UpdatedAt:               updatedAt,
+				GalleryIDs:              models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+				TagIDs:                  models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
+				PerformerIDs:            models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
 		},
@@ -424,16 +435,17 @@ func clearImagePartial() models.ImagePartial {
 
 func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title        = "title"
-		code         = "code"
-		details      = "details"
-		photographer = "photographer"
-		rating       = 60
-		url          = "url"
-		date, _      = models.ParseDate("2003-02-01")
-		ocounter     = 5
-		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title                   = "title"
+		code                    = "code"
+		details                 = "details"
+		photographer            = "photographer"
+		rating                  = 60
+		url                     = "url"
+		date, _                 = models.ParseDate("2003-02-01")
+		ocounter                = 5
+		performerAssignmentLock = true
+		createdAt               = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt               = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -456,12 +468,15 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 					Values: []string{url},
 					Mode:   models.RelationshipUpdateModeSet,
 				},
-				Date:      models.NewOptionalDate(date),
-				Organized: models.NewOptionalBool(true),
-				OCounter:  models.NewOptionalInt(ocounter),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithImage]),
-				CreatedAt: models.NewOptionalTime(createdAt),
-				UpdatedAt: models.NewOptionalTime(updatedAt),
+				Date:                    models.NewOptionalDate(date),
+				Organized:               models.NewOptionalBool(true),
+				PerformerAssignmentLock: models.NewOptionalBool(performerAssignmentLock),
+				StudioAssignmentLock:    models.NewOptionalBool(testStudioAssignmentLock),
+				TagAssignmentLock:       models.NewOptionalBool(testTagAssignmentLock),
+				OCounter:                models.NewOptionalInt(ocounter),
+				StudioID:                models.NewOptionalInt(studioIDs[studioIdxWithImage]),
+				CreatedAt:               models.NewOptionalTime(createdAt),
+				UpdatedAt:               models.NewOptionalTime(updatedAt),
 				GalleryIDs: &models.UpdateIDs{
 					IDs:  []int{galleryIDs[galleryIdxWithImage]},
 					Mode: models.RelationshipUpdateModeSet,
@@ -476,17 +491,20 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Image{
-				ID:           imageIDs[imageIdx1WithGallery],
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Photographer: photographer,
-				Rating:       &rating,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Organized:    true,
-				OCounter:     ocounter,
-				StudioID:     &studioIDs[studioIdxWithImage],
+				ID:                      imageIDs[imageIdx1WithGallery],
+				Title:                   title,
+				Code:                    code,
+				Details:                 details,
+				Photographer:            photographer,
+				Rating:                  &rating,
+				URLs:                    models.NewRelatedStrings([]string{url}),
+				Date:                    &date,
+				Organized:               true,
+				PerformerAssignmentLock: performerAssignmentLock,
+				StudioAssignmentLock:    testStudioAssignmentLock,
+				TagAssignmentLock:       testTagAssignmentLock,
+				OCounter:                ocounter,
+				StudioID:                &studioIDs[studioIdxWithImage],
 				Files: models.NewRelatedFiles([]models.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),

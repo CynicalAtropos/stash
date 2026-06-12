@@ -1,0 +1,9 @@
+ALTER TABLE `scenes` ADD COLUMN `performer_assignment_lock` boolean not null default '0';
+ALTER TABLE `scenes` ADD COLUMN `studio_assignment_lock` boolean not null default '0';
+ALTER TABLE `scenes` ADD COLUMN `tag_assignment_lock` boolean not null default '0';
+ALTER TABLE `images` ADD COLUMN `performer_assignment_lock` boolean not null default '0';
+ALTER TABLE `images` ADD COLUMN `studio_assignment_lock` boolean not null default '0';
+ALTER TABLE `images` ADD COLUMN `tag_assignment_lock` boolean not null default '0';
+ALTER TABLE `galleries` ADD COLUMN `performer_assignment_lock` boolean not null default '0';
+ALTER TABLE `galleries` ADD COLUMN `studio_assignment_lock` boolean not null default '0';
+ALTER TABLE `galleries` ADD COLUMN `tag_assignment_lock` boolean not null default '0';

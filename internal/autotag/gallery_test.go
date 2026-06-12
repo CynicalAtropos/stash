@@ -83,6 +83,24 @@ func TestGalleryPerformers(t *testing.T) {
 	}
 }
 
+func TestGalleryPerformersLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	gallery := models.Gallery{
+		ID:                      1,
+		Path:                    "performer name.zip",
+		PerformerAssignmentLock: true,
+		PerformerIDs:            models.NewRelatedIDs([]int{}),
+	}
+
+	err := GalleryPerformers(testCtx, &gallery, db.Gallery, db.Performer, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
+}
+
 func TestGalleryStudios(t *testing.T) {
 	t.Parallel()
 
@@ -153,6 +171,23 @@ func TestGalleryStudios(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestGalleryStudiosLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	gallery := models.Gallery{
+		ID:                   1,
+		Path:                 "studio name",
+		StudioAssignmentLock: true,
+	}
+
+	err := GalleryStudios(testCtx, &gallery, db.Gallery, db.Studio, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
 }
 
 func TestGalleryTags(t *testing.T) {
@@ -228,4 +263,22 @@ func TestGalleryTags(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestGalleryTagsLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	gallery := models.Gallery{
+		ID:                1,
+		Path:              "tag name",
+		TagAssignmentLock: true,
+		TagIDs:            models.NewRelatedIDs([]int{}),
+	}
+
+	err := GalleryTags(testCtx, &gallery, db.Gallery, db.Tag, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
 }

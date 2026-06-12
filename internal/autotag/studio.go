@@ -84,6 +84,10 @@ func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths 
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			if o.StudioAssignmentLock {
+				return false, nil
+			}
+
 			// don't set if already set
 			if o.StudioID != nil {
 				return false, nil
@@ -114,6 +118,10 @@ func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths 
 
 	for _, tt := range t {
 		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
+			if i.StudioAssignmentLock {
+				return false, nil
+			}
+
 			// don't set if already set
 			if i.StudioID != nil {
 				return false, nil
@@ -144,6 +152,10 @@ func (tagger *Tagger) StudioGalleries(ctx context.Context, p *models.Studio, pat
 
 	for _, tt := range t {
 		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+			if o.StudioAssignmentLock {
+				return false, nil
+			}
+
 			// don't set if already set
 			if o.StudioID != nil {
 				return false, nil

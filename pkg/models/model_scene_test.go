@@ -12,17 +12,19 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 	)
 
 	var (
-		title                = "title"
-		code                 = "1337"
-		details              = "details"
-		director             = "director"
-		url                  = "url"
-		date                 = "2001-02-03"
-		rating100            = 80
-		organized            = true
-		performerAutotagLock = true
-		studioID             = 2
-		studioIDStr          = "2"
+		title                   = "title"
+		code                    = "1337"
+		details                 = "details"
+		director                = "director"
+		url                     = "url"
+		date                    = "2001-02-03"
+		rating100               = 80
+		organized               = true
+		performerAssignmentLock = true
+		studioAssignmentLock    = true
+		tagAssignmentLock       = true
+		studioID                = 2
+		studioIDStr             = "2"
 	)
 
 	dateObj, _ := ParseDate(date)
@@ -45,24 +47,28 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 					Values: []string{url},
 					Mode:   RelationshipUpdateModeSet,
 				},
-				Date:                 NewOptionalDate(dateObj),
-				Rating:               NewOptionalInt(rating100),
-				Organized:            NewOptionalBool(organized),
-				PerformerAutotagLock: NewOptionalBool(performerAutotagLock),
-				StudioID:             NewOptionalInt(studioID),
+				Date:                    NewOptionalDate(dateObj),
+				Rating:                  NewOptionalInt(rating100),
+				Organized:               NewOptionalBool(organized),
+				PerformerAssignmentLock: NewOptionalBool(performerAssignmentLock),
+				StudioAssignmentLock:    NewOptionalBool(studioAssignmentLock),
+				TagAssignmentLock:       NewOptionalBool(tagAssignmentLock),
+				StudioID:                NewOptionalInt(studioID),
 			},
 			SceneUpdateInput{
-				ID:                   idStr,
-				Title:                &title,
-				Code:                 &code,
-				Details:              &details,
-				Director:             &director,
-				Urls:                 []string{url},
-				Date:                 &date,
-				Rating100:            &rating100,
-				Organized:            &organized,
-				PerformerAutotagLock: &performerAutotagLock,
-				StudioID:             &studioIDStr,
+				ID:                      idStr,
+				Title:                   &title,
+				Code:                    &code,
+				Details:                 &details,
+				Director:                &director,
+				Urls:                    []string{url},
+				Date:                    &date,
+				Rating100:               &rating100,
+				Organized:               &organized,
+				PerformerAssignmentLock: &performerAssignmentLock,
+				StudioAssignmentLock:    &studioAssignmentLock,
+				TagAssignmentLock:       &tagAssignmentLock,
+				StudioID:                &studioIDStr,
 			},
 		},
 		{

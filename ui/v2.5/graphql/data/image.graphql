@@ -8,6 +8,9 @@ fragment ImageData on Image {
   details
   photographer
   organized
+  performer_assignment_lock
+  studio_assignment_lock
+  tag_assignment_lock
   o_counter
   created_at
   updated_at

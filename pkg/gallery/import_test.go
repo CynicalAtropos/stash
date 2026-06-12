@@ -42,12 +42,15 @@ var (
 func TestImporterPreImport(t *testing.T) {
 	i := Importer{
 		Input: jsonschema.Gallery{
-			Title:     title,
-			Date:      date,
-			Details:   details,
-			Rating:    rating,
-			Organized: organized,
-			URL:       url,
+			Title:                   title,
+			Date:                    date,
+			Details:                 details,
+			Rating:                  rating,
+			Organized:               organized,
+			PerformerAssignmentLock: performerAssignmentLock,
+			StudioAssignmentLock:    studioAssignmentLock,
+			TagAssignmentLock:       tagAssignmentLock,
+			URL:                     url,
 			CreatedAt: json.JSONTime{
 				Time: createdAt,
 			},
@@ -61,17 +64,20 @@ func TestImporterPreImport(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectedGallery := models.Gallery{
-		Title:        title,
-		Date:         &dateObj,
-		Details:      details,
-		Rating:       &rating,
-		Organized:    organized,
-		URLs:         models.NewRelatedStrings([]string{url}),
-		Files:        models.NewRelatedFiles([]models.File{}),
-		TagIDs:       models.NewRelatedIDs([]int{}),
-		PerformerIDs: models.NewRelatedIDs([]int{}),
-		CreatedAt:    createdAt,
-		UpdatedAt:    updatedAt,
+		Title:                   title,
+		Date:                    &dateObj,
+		Details:                 details,
+		Rating:                  &rating,
+		Organized:               organized,
+		PerformerAssignmentLock: performerAssignmentLock,
+		StudioAssignmentLock:    studioAssignmentLock,
+		TagAssignmentLock:       tagAssignmentLock,
+		URLs:                    models.NewRelatedStrings([]string{url}),
+		Files:                   models.NewRelatedFiles([]models.File{}),
+		TagIDs:                  models.NewRelatedIDs([]int{}),
+		PerformerIDs:            models.NewRelatedIDs([]int{}),
+		CreatedAt:               createdAt,
+		UpdatedAt:               updatedAt,
 	}
 
 	assert.Equal(t, expectedGallery, i.gallery)

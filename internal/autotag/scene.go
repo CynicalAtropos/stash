@@ -36,7 +36,7 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 
 // ScenePerformers tags the provided scene with performers whose name matches the scene's path.
 func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
-	if s.PerformerAutotagLock {
+	if s.PerformerAssignmentLock {
 		return nil
 	}
 
@@ -64,6 +64,10 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 //
 // Scenes will not be tagged if studio is already set.
 func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
+	if s.StudioAssignmentLock {
+		return nil
+	}
+
 	if s.StudioID != nil {
 		// don't modify
 		return nil
@@ -78,6 +82,10 @@ func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, s
 
 // SceneTags tags the provided scene with tags whose name matches the scene's path.
 func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
+	if s.TagAssignmentLock {
+		return nil
+	}
+
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {

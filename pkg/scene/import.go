@@ -115,7 +115,9 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	}
 
 	newScene.Organized = sceneJSON.Organized
-	newScene.PerformerAutotagLock = sceneJSON.PerformerAutotagLock
+	newScene.PerformerAssignmentLock = sceneJSON.PerformerAssignmentLock
+	newScene.StudioAssignmentLock = sceneJSON.StudioAssignmentLock
+	newScene.TagAssignmentLock = sceneJSON.TagAssignmentLock
 	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
 	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
 	newScene.ResumeTime = sceneJSON.ResumeTime

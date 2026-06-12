@@ -102,18 +102,30 @@ func (s autotagScraper) viaImage(ctx context.Context, _client *http.Client, imag
 
 	// populate performers, studio and tags based on image path
 	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
-		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaImage: %w", err)
+		var performers []*models.ScrapedPerformer
+		if !image.PerformerAssignmentLock {
+			var err error
+			performers, err = autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaImage: %w", err)
+			}
 		}
-		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaImage: %w", err)
+		var studio *models.ScrapedStudio
+		if !image.StudioAssignmentLock {
+			var err error
+			studio, err = autotagMatchStudio(ctx, path, s.studioReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaImage: %w", err)
+			}
 		}
 
-		tags, err := autotagMatchTags(ctx, path, s.tagReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaImage: %w", err)
+		var tags []*models.ScrapedTag
+		if !image.TagAssignmentLock {
+			var err error
+			tags, err = autotagMatchTags(ctx, path, s.tagReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaImage: %w", err)
+			}
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
@@ -144,21 +156,29 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 		}
 
 		var performers []*models.ScrapedPerformer
-		if !scene.PerformerAutotagLock {
+		if !scene.PerformerAssignmentLock {
 			var err error
 			performers, err = autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
 			if err != nil {
 				return fmt.Errorf("autotag scraper viaScene: %w", err)
 			}
 		}
-		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaScene: %w", err)
+		var studio *models.ScrapedStudio
+		if !scene.StudioAssignmentLock {
+			var err error
+			studio, err = autotagMatchStudio(ctx, path, s.studioReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaScene: %w", err)
+			}
 		}
 
-		tags, err := autotagMatchTags(ctx, path, s.tagReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaScene: %w", err)
+		var tags []*models.ScrapedTag
+		if !scene.TagAssignmentLock {
+			var err error
+			tags, err = autotagMatchTags(ctx, path, s.tagReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaScene: %w", err)
+			}
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
@@ -192,18 +212,30 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	// populate performers, studio and tags based on scene path
 	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		path := gallery.Path
-		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaGallery: %w", err)
+		var performers []*models.ScrapedPerformer
+		if !gallery.PerformerAssignmentLock {
+			var err error
+			performers, err = autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaGallery: %w", err)
+			}
 		}
-		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaGallery: %w", err)
+		var studio *models.ScrapedStudio
+		if !gallery.StudioAssignmentLock {
+			var err error
+			studio, err = autotagMatchStudio(ctx, path, s.studioReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaGallery: %w", err)
+			}
 		}
 
-		tags, err := autotagMatchTags(ctx, path, s.tagReader, trimExt)
-		if err != nil {
-			return fmt.Errorf("autotag scraper viaGallery: %w", err)
+		var tags []*models.ScrapedTag
+		if !gallery.TagAssignmentLock {
+			var err error
+			tags, err = autotagMatchTags(ctx, path, s.tagReader, trimExt)
+			if err != nil {
+				return fmt.Errorf("autotag scraper viaGallery: %w", err)
+			}
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {

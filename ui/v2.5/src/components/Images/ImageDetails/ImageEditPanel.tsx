@@ -5,6 +5,7 @@ import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { AssignmentLockButton } from "src/components/Shared/AssignmentLockButton";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
@@ -90,6 +91,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
+    performer_assignment_lock: yup.boolean().defined(),
+    studio_assignment_lock: yup.boolean().defined(),
+    tag_assignment_lock: yup.boolean().defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
     custom_fields: yup.object().required().defined(),
   });
@@ -104,6 +108,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
     gallery_ids: (image.galleries ?? []).map((g) => g.id),
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
+    performer_assignment_lock: image.performer_assignment_lock ?? false,
+    studio_assignment_lock: image.studio_assignment_lock ?? false,
+    tag_assignment_lock: image.tag_assignment_lock ?? false,
     tag_ids: (image.tags ?? []).map((t) => t.id),
     custom_fields: cloneDeep(image.custom_fields ?? {}),
   };
@@ -250,7 +257,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", imageData.urls);
     }
 
-    if (imageData.studio?.stored_id) {
+    if (!formik.values.studio_assignment_lock && imageData.studio?.stored_id) {
       onSetStudio({
         id: imageData.studio.stored_id,
         name: imageData.studio.name ?? "",
@@ -258,7 +265,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
       });
     }
 
-    if (imageData.performers?.length) {
+    if (
+      !formik.values.performer_assignment_lock &&
+      imageData.performers?.length
+    ) {
       const idPerfs = imageData.performers.filter((p) => {
         return p.stored_id !== undefined && p.stored_id !== null;
       });
@@ -276,7 +286,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
       }
     }
 
-    updateTagsStateFromScraper(imageData.tags ?? undefined);
+    if (!formik.values.tag_assignment_lock) {
+      updateTagsStateFromScraper(imageData.tags ?? undefined);
+    }
   }
 
   async function onReloadScrapers() {
@@ -369,6 +381,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
+    const lockLabel = intl.formatMessage({
+      id: "image.studio_assignment_lock",
+      defaultMessage: "Lock Automated Studio Updates",
+    });
     const control = (
       <StudioSelect
         onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
@@ -376,7 +392,21 @@ export const ImageEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField("studio_id", title, control, {
+      labelControl: (
+        <AssignmentLockButton
+          locked={formik.values.studio_assignment_lock}
+          label={lockLabel}
+          className="label-control ml-1"
+          onToggle={() =>
+            formik.setFieldValue(
+              "studio_assignment_lock",
+              !formik.values.studio_assignment_lock
+            )
+          }
+        />
+      ),
+    });
   }
 
   function renderPerformersField() {
@@ -389,6 +419,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
     })();
 
     const title = intl.formatMessage({ id: "performers" });
+    const lockLabel = intl.formatMessage({
+      id: "image.performer_assignment_lock",
+      defaultMessage: "Lock Automated Performer Updates",
+    });
     const control = (
       <PerformerSelect
         isMulti
@@ -398,12 +432,48 @@ export const ImageEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("performer_ids", title, control, fullWidthProps);
+    return renderField("performer_ids", title, control, {
+      ...fullWidthProps,
+      labelControl: (
+        <AssignmentLockButton
+          locked={formik.values.performer_assignment_lock}
+          label={lockLabel}
+          className="label-control ml-1"
+          onToggle={() =>
+            formik.setFieldValue(
+              "performer_assignment_lock",
+              !formik.values.performer_assignment_lock
+            )
+          }
+        />
+      ),
+    });
   }
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    const lockLabel = intl.formatMessage({
+      id: "image.tag_assignment_lock",
+      defaultMessage: "Lock Automated Tag Updates",
+    });
+    const control = tagsControl();
+
+    return renderField("tag_ids", title, control, {
+      ...fullWidthProps,
+      labelControl: (
+        <AssignmentLockButton
+          locked={formik.values.tag_assignment_lock}
+          label={lockLabel}
+          className="label-control ml-1"
+          onToggle={() =>
+            formik.setFieldValue(
+              "tag_assignment_lock",
+              !formik.values.tag_assignment_lock
+            )
+          }
+        />
+      ),
+    });
   }
 
   function renderDetailsField() {

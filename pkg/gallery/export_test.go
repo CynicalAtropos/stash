@@ -27,13 +27,16 @@ const (
 )
 
 var (
-	url        = "url"
-	title      = "title"
-	date       = "2001-01-01"
-	dateObj, _ = models.ParseDate(date)
-	rating     = 5
-	organized  = true
-	details    = "details"
+	url                     = "url"
+	title                   = "title"
+	date                    = "2001-01-01"
+	dateObj, _              = models.ParseDate(date)
+	rating                  = 5
+	organized               = true
+	performerAssignmentLock = true
+	studioAssignmentLock    = true
+	tagAssignmentLock       = true
+	details                 = "details"
 )
 
 const (
@@ -54,14 +57,17 @@ func createFullGallery(id int) models.Gallery {
 				Path: path,
 			},
 		}),
-		Title:     title,
-		Date:      &dateObj,
-		Details:   details,
-		Rating:    &rating,
-		Organized: organized,
-		URLs:      models.NewRelatedStrings([]string{url}),
-		CreatedAt: createTime,
-		UpdatedAt: updateTime,
+		Title:                   title,
+		Date:                    &dateObj,
+		Details:                 details,
+		Rating:                  &rating,
+		Organized:               organized,
+		PerformerAssignmentLock: performerAssignmentLock,
+		StudioAssignmentLock:    studioAssignmentLock,
+		TagAssignmentLock:       tagAssignmentLock,
+		URLs:                    models.NewRelatedStrings([]string{url}),
+		CreatedAt:               createTime,
+		UpdatedAt:               updateTime,
 	}
 }
 
@@ -80,13 +86,16 @@ func createEmptyGallery(id int) models.Gallery {
 
 func createFullJSONGallery() *jsonschema.Gallery {
 	return &jsonschema.Gallery{
-		Title:     title,
-		Date:      date,
-		Details:   details,
-		Rating:    rating,
-		Organized: organized,
-		URLs:      []string{url},
-		ZipFiles:  []string{path},
+		Title:                   title,
+		Date:                    date,
+		Details:                 details,
+		Rating:                  rating,
+		Organized:               organized,
+		PerformerAssignmentLock: performerAssignmentLock,
+		StudioAssignmentLock:    studioAssignmentLock,
+		TagAssignmentLock:       tagAssignmentLock,
+		URLs:                    []string{url},
+		ZipFiles:                []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

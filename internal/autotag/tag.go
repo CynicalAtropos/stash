@@ -56,6 +56,10 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			if o.TagAssignmentLock {
+				return false, nil
+			}
+
 			if err := o.LoadTagIDs(ctx, rw); err != nil {
 				return false, err
 			}
@@ -85,6 +89,10 @@ func (tagger *Tagger) TagImages(ctx context.Context, p *models.Tag, paths []stri
 
 	for _, tt := range t {
 		if err := tt.tagImages(ctx, paths, rw, func(o *models.Image) (bool, error) {
+			if o.TagAssignmentLock {
+				return false, nil
+			}
+
 			if err := o.LoadTagIDs(ctx, rw); err != nil {
 				return false, err
 			}
@@ -114,6 +122,10 @@ func (tagger *Tagger) TagGalleries(ctx context.Context, p *models.Tag, paths []s
 
 	for _, tt := range t {
 		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+			if o.TagAssignmentLock {
+				return false, nil
+			}
+
 			if err := o.LoadTagIDs(ctx, rw); err != nil {
 				return false, err
 			}

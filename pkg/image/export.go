@@ -36,6 +36,9 @@ func ToBasicJSON(ctx context.Context, reader ExportReader, image *models.Image) 
 	}
 
 	newImageJSON.Organized = image.Organized
+	newImageJSON.PerformerAssignmentLock = image.PerformerAssignmentLock
+	newImageJSON.StudioAssignmentLock = image.StudioAssignmentLock
+	newImageJSON.TagAssignmentLock = image.TagAssignmentLock
 	newImageJSON.OCounter = image.OCounter
 
 	var err error

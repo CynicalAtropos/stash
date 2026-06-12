@@ -32,6 +32,9 @@ const galleryFields = [
   "rating100",
   "details",
   "organized",
+  "performer_assignment_lock",
+  "studio_assignment_lock",
+  "tag_assignment_lock",
   "photographer",
   "date",
 ];
@@ -278,6 +281,45 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               label={intl.formatMessage({ id: "organized" })}
               setChecked={(checked) => setUpdateField({ organized: checked })}
               checked={updateInput.organized ?? undefined}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="performer_assignment_lock">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({
+                id: "gallery.performer_assignment_lock",
+                defaultMessage: "Lock Automated Performer Updates",
+              })}
+              setChecked={(checked) =>
+                setUpdateField({ performer_assignment_lock: checked })
+              }
+              checked={updateInput.performer_assignment_lock ?? undefined}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="studio_assignment_lock">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({
+                id: "gallery.studio_assignment_lock",
+                defaultMessage: "Lock Automated Studio Updates",
+              })}
+              setChecked={(checked) =>
+                setUpdateField({ studio_assignment_lock: checked })
+              }
+              checked={updateInput.studio_assignment_lock ?? undefined}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="tag_assignment_lock">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({
+                id: "gallery.tag_assignment_lock",
+                defaultMessage: "Lock Automated Tag Updates",
+              })}
+              setChecked={(checked) =>
+                setUpdateField({ tag_assignment_lock: checked })
+              }
+              checked={updateInput.tag_assignment_lock ?? undefined}
             />
           </Form.Group>
         </Form>

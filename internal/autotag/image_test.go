@@ -80,6 +80,24 @@ func TestImagePerformers(t *testing.T) {
 	}
 }
 
+func TestImagePerformersLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	image := models.Image{
+		ID:                      1,
+		Path:                    "performer name.jpg",
+		PerformerAssignmentLock: true,
+		PerformerIDs:            models.NewRelatedIDs([]int{}),
+	}
+
+	err := ImagePerformers(testCtx, &image, db.Image, db.Performer, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
+}
+
 func TestImageStudios(t *testing.T) {
 	t.Parallel()
 
@@ -150,6 +168,23 @@ func TestImageStudios(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestImageStudiosLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	image := models.Image{
+		ID:                   1,
+		Path:                 "studio name.jpg",
+		StudioAssignmentLock: true,
+	}
+
+	err := ImageStudios(testCtx, &image, db.Image, db.Studio, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
 }
 
 func TestImageTags(t *testing.T) {
@@ -226,4 +261,22 @@ func TestImageTags(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestImageTagsLocked(t *testing.T) {
+	t.Parallel()
+
+	db := mocks.NewDatabase()
+
+	image := models.Image{
+		ID:                1,
+		Path:              "tag name.jpg",
+		TagAssignmentLock: true,
+		TagIDs:            models.NewRelatedIDs([]int{}),
+	}
+
+	err := ImageTags(testCtx, &image, db.Image, db.Tag, nil)
+
+	assert.Nil(t, err)
+	db.AssertExpectations(t)
 }

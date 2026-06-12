@@ -32,7 +32,9 @@ const sceneFields = [
   "rating100",
   "details",
   "organized",
-  "performer_autotag_lock",
+  "performer_assignment_lock",
+  "studio_assignment_lock",
+  "tag_assignment_lock",
   "director",
   "date",
 ];
@@ -282,16 +284,42 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group controlId="performer_autotag_lock">
+          <Form.Group controlId="performer_assignment_lock">
             <IndeterminateCheckbox
               label={intl.formatMessage({
-                id: "scene.performer_autotag_lock",
-                defaultMessage: "Performer auto-tag lock",
+                id: "scene.performer_assignment_lock",
+                defaultMessage: "Lock Automated Performer Updates",
               })}
               setChecked={(checked) =>
-                setUpdateField({ performer_autotag_lock: checked })
+                setUpdateField({ performer_assignment_lock: checked })
               }
-              checked={updateInput.performer_autotag_lock ?? undefined}
+              checked={updateInput.performer_assignment_lock ?? undefined}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="studio_assignment_lock">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({
+                id: "scene.studio_assignment_lock",
+                defaultMessage: "Lock Automated Studio Updates",
+              })}
+              setChecked={(checked) =>
+                setUpdateField({ studio_assignment_lock: checked })
+              }
+              checked={updateInput.studio_assignment_lock ?? undefined}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="tag_assignment_lock">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({
+                id: "scene.tag_assignment_lock",
+                defaultMessage: "Lock Automated Tag Updates",
+              })}
+              setChecked={(checked) =>
+                setUpdateField({ tag_assignment_lock: checked })
+              }
+              checked={updateInput.tag_assignment_lock ?? undefined}
             />
           </Form.Group>
         </Form>

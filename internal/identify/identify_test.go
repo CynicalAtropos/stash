@@ -279,6 +279,175 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 }
 
+func TestSceneIdentifier_getSceneUpdaterAssignmentLocks(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	boolFalse := false
+	tr := &SceneIdentifier{
+		SceneReaderUpdater: db.Scene,
+		StudioReaderWriter: db.Studio,
+		PerformerCreator:   db.Performer,
+		TagFinderCreator:   db.Tag,
+		DefaultOptions: &MetadataOptions{
+			SetCoverImage: &boolFalse,
+		},
+	}
+
+	const (
+		sceneID = iota + 1
+		studioID
+		performerID
+		tagID
+	)
+
+	title := "scrapedTitle"
+	studioIDStr := strconv.Itoa(studioID)
+	performerIDStr := strconv.Itoa(performerID)
+	tagIDStr := strconv.Itoa(tagID)
+
+	result := &scrapeResult{
+		result: &models.ScrapedScene{
+			Title: &title,
+			Studio: &models.ScrapedStudio{
+				StoredID: &studioIDStr,
+			},
+			Performers: []*models.ScrapedPerformer{
+				{
+					StoredID: &performerIDStr,
+				},
+			},
+			Tags: []*models.ScrapedTag{
+				{
+					StoredID: &tagIDStr,
+				},
+			},
+		},
+		source: ScraperSource{},
+	}
+
+	tests := []struct {
+		name        string
+		scene       *models.Scene
+		wantStudio  models.OptionalInt
+		wantPerfs   *models.UpdateIDs
+		wantTags    *models.UpdateIDs
+		wantTitle   models.OptionalString
+		wantIsEmpty bool
+	}{
+		{
+			name: "unlocked relationships are set",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			wantStudio: models.NewOptionalInt(studioID),
+			wantPerfs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeSet,
+			},
+			wantTags: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeSet,
+			},
+			wantTitle: models.NewOptionalString(title),
+		},
+		{
+			name: "locked relationships are skipped",
+			scene: &models.Scene{
+				ID:                      sceneID,
+				PerformerAssignmentLock: true,
+				StudioAssignmentLock:    true,
+				TagAssignmentLock:       true,
+				URLs:                    models.NewRelatedStrings([]string{}),
+				PerformerIDs:            models.NewRelatedIDs([]int{}),
+				TagIDs:                  models.NewRelatedIDs([]int{}),
+				StashIDs:                models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			wantTitle: models.NewOptionalString(title),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tr.getSceneUpdater(testCtx, tt.scene, result)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantIsEmpty, got.IsEmpty())
+			assert.Equal(t, tt.wantTitle, got.Partial.Title)
+			assert.Equal(t, tt.wantStudio, got.Partial.StudioID)
+			assert.Equal(t, tt.wantPerfs, got.Partial.PerformerIDs)
+			assert.Equal(t, tt.wantTags, got.Partial.TagIDs)
+		})
+	}
+}
+
+func TestSceneIdentifier_getSceneUpdaterTagAssignmentLockSkipsSingleNamePerformerTag(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	boolFalse := false
+	boolTrue := true
+	skipTagID := 1
+	skipTagIDStr := strconv.Itoa(skipTagID)
+	performerName := "Joe"
+	tr := &SceneIdentifier{
+		SceneReaderUpdater: db.Scene,
+		StudioReaderWriter: db.Studio,
+		PerformerCreator:   db.Performer,
+		TagFinderCreator:   db.Tag,
+		DefaultOptions: &MetadataOptions{
+			SetCoverImage:              &boolFalse,
+			SkipSingleNamePerformers:   &boolTrue,
+			SkipSingleNamePerformerTag: &skipTagIDStr,
+		},
+	}
+
+	result := &scrapeResult{
+		result: &models.ScrapedScene{
+			Performers: []*models.ScrapedPerformer{
+				{
+					Name: &performerName,
+				},
+			},
+		},
+		source: ScraperSource{},
+	}
+
+	scene := &models.Scene{
+		ID:                1,
+		TagAssignmentLock: true,
+		URLs:              models.NewRelatedStrings([]string{}),
+		PerformerIDs:      models.NewRelatedIDs([]int{}),
+		TagIDs:            models.NewRelatedIDs([]int{}),
+		StashIDs:          models.NewRelatedStashIDs([]models.StashID{}),
+	}
+
+	got, err := tr.getSceneUpdater(testCtx, scene, result)
+
+	assert.NoError(t, err)
+	assert.True(t, got.IsEmpty())
+	assert.Nil(t, got.Partial.TagIDs)
+}
+
+func TestSceneIdentifier_addTagToSceneAssignmentLock(t *testing.T) {
+	db := mocks.NewDatabase()
+	tr := &SceneIdentifier{
+		TxnManager:         db,
+		SceneReaderUpdater: db.Scene,
+		TagFinderCreator:   db.Tag,
+	}
+	scene := &models.Scene{
+		ID:                1,
+		TagAssignmentLock: true,
+		TagIDs:            models.NewRelatedIDs([]int{}),
+	}
+
+	assert.NoError(t, tr.addTagToScene(testCtx, scene, "1"))
+	db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
+}
+
 func Test_getFieldOptions(t *testing.T) {
 	const (
 		inFirst  = "inFirst"

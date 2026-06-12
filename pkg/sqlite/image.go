@@ -34,16 +34,19 @@ type imageRow struct {
 	Title zero.String `db:"title"`
 	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating        null.Int    `db:"rating"`
-	Date          NullDate    `db:"date"`
-	DatePrecision null.Int    `db:"date_precision"`
-	Details       zero.String `db:"details"`
-	Photographer  zero.String `db:"photographer"`
-	Organized     bool        `db:"organized"`
-	OCounter      int         `db:"o_counter"`
-	StudioID      null.Int    `db:"studio_id,omitempty"`
-	CreatedAt     Timestamp   `db:"created_at"`
-	UpdatedAt     Timestamp   `db:"updated_at"`
+	Rating                  null.Int    `db:"rating"`
+	Date                    NullDate    `db:"date"`
+	DatePrecision           null.Int    `db:"date_precision"`
+	Details                 zero.String `db:"details"`
+	Photographer            zero.String `db:"photographer"`
+	Organized               bool        `db:"organized"`
+	PerformerAssignmentLock bool        `db:"performer_assignment_lock"`
+	StudioAssignmentLock    bool        `db:"studio_assignment_lock"`
+	TagAssignmentLock       bool        `db:"tag_assignment_lock"`
+	OCounter                int         `db:"o_counter"`
+	StudioID                null.Int    `db:"studio_id,omitempty"`
+	CreatedAt               Timestamp   `db:"created_at"`
+	UpdatedAt               Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
@@ -56,6 +59,9 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Details = zero.StringFrom(i.Details)
 	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
+	r.PerformerAssignmentLock = i.PerformerAssignmentLock
+	r.StudioAssignmentLock = i.StudioAssignmentLock
+	r.TagAssignmentLock = i.TagAssignmentLock
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: i.CreatedAt}
@@ -72,16 +78,19 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID:           r.ID,
-		Title:        r.Title.String,
-		Code:         r.Code.String,
-		Rating:       nullIntPtr(r.Rating),
-		Date:         r.Date.DatePtr(r.DatePrecision),
-		Details:      r.Details.String,
-		Photographer: r.Photographer.String,
-		Organized:    r.Organized,
-		OCounter:     r.OCounter,
-		StudioID:     nullIntPtr(r.StudioID),
+		ID:                      r.ID,
+		Title:                   r.Title.String,
+		Code:                    r.Code.String,
+		Rating:                  nullIntPtr(r.Rating),
+		Date:                    r.Date.DatePtr(r.DatePrecision),
+		Details:                 r.Details.String,
+		Photographer:            r.Photographer.String,
+		Organized:               r.Organized,
+		PerformerAssignmentLock: r.PerformerAssignmentLock,
+		StudioAssignmentLock:    r.StudioAssignmentLock,
+		TagAssignmentLock:       r.TagAssignmentLock,
+		OCounter:                r.OCounter,
+		StudioID:                nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
@@ -109,6 +118,9 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("details", i.Details)
 	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
+	r.setBool("performer_assignment_lock", i.PerformerAssignmentLock)
+	r.setBool("studio_assignment_lock", i.StudioAssignmentLock)
+	r.setBool("tag_assignment_lock", i.TagAssignmentLock)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
 	r.setTimestamp("created_at", i.CreatedAt)

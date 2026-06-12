@@ -33,10 +33,25 @@ var (
 var testCtx = context.Background()
 
 func TestImporterPreImport(t *testing.T) {
-	i := Importer{}
+	i := Importer{
+		Input: jsonschema.Image{
+			Title:                   title,
+			Organized:               organized,
+			PerformerAssignmentLock: performerAssignmentLock,
+			StudioAssignmentLock:    studioAssignmentLock,
+			TagAssignmentLock:       tagAssignmentLock,
+			CustomFields:            customFields,
+		},
+	}
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
+	assert.Equal(t, title, i.image.Title)
+	assert.Equal(t, organized, i.image.Organized)
+	assert.Equal(t, performerAssignmentLock, i.image.PerformerAssignmentLock)
+	assert.Equal(t, studioAssignmentLock, i.image.StudioAssignmentLock)
+	assert.Equal(t, tagAssignmentLock, i.image.TagAssignmentLock)
+	assert.Equal(t, customFields, i.customFields)
 }
 
 func TestImporterPreImportWithStudio(t *testing.T) {

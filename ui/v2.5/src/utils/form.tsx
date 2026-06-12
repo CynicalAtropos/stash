@@ -10,6 +10,7 @@ import {
   FormLabelProps,
   Row,
 } from "react-bootstrap";
+import cx from "classnames";
 import { IntlShape } from "react-intl";
 import { DateInput } from "src/components/Shared/DateInput";
 import { DurationInput } from "src/components/Shared/DurationInput";
@@ -86,6 +87,7 @@ type Formik<V extends FormikValues> = ReturnType<typeof useFormik<V>>;
 interface IProps {
   labelProps?: FormLabelProps;
   fieldProps?: ColProps;
+  labelControl?: React.ReactNode;
 }
 
 export function formikUtils<V extends FormikValues>(
@@ -174,9 +176,34 @@ export function formikUtils<V extends FormikValues>(
     control: React.ReactNode,
     props?: IProps
   ) {
+    const labelControl = props?.labelControl;
+    const resolvedLabelProps = props?.labelProps ?? labelProps;
+
+    function renderFieldLabel() {
+      if (!labelControl) {
+        return <Form.Label {...resolvedLabelProps}>{title}</Form.Label>;
+      }
+
+      const { column: _column, className, ...colProps } = resolvedLabelProps;
+
+      return (
+        <Col
+          {...(colProps as ColProps)}
+          className={cx("col-form-label", className)}
+        >
+          <div className="d-inline-flex align-items-baseline">
+            <Form.Label htmlFor={field} className="mb-0">
+              {title}
+            </Form.Label>
+            {labelControl}
+          </div>
+        </Col>
+      );
+    }
+
     return (
       <Form.Group controlId={field} as={Row} data-field={field}>
-        <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
+        {renderFieldLabel()}
         <Col {...(props?.fieldProps ?? fieldProps)}>{control}</Col>
       </Form.Group>
     );

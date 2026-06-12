@@ -70,11 +70,14 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
 
-		Title:     imageJSON.Title,
-		Organized: imageJSON.Organized,
-		OCounter:  imageJSON.OCounter,
-		CreatedAt: imageJSON.CreatedAt.GetTime(),
-		UpdatedAt: imageJSON.UpdatedAt.GetTime(),
+		Title:                   imageJSON.Title,
+		Organized:               imageJSON.Organized,
+		PerformerAssignmentLock: imageJSON.PerformerAssignmentLock,
+		StudioAssignmentLock:    imageJSON.StudioAssignmentLock,
+		TagAssignmentLock:       imageJSON.TagAssignmentLock,
+		OCounter:                imageJSON.OCounter,
+		CreatedAt:               imageJSON.CreatedAt.GetTime(),
+		UpdatedAt:               imageJSON.UpdatedAt.GetTime(),
 	}
 
 	if imageJSON.Title != "" {

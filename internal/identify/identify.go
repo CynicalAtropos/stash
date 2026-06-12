@@ -198,13 +198,16 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	setOrganized := utils.IsTrue(options.SetOrganized)
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error getting studio: %w", err)
-	}
+	var err error
+	if !s.StudioAssignmentLock {
+		studioID, err := rel.studio(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error getting studio: %w", err)
+		}
 
-	if studioID != nil {
-		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+		if studioID != nil {
+			ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+		}
 	}
 
 	// Determine allowed genders for performer filtering
@@ -223,37 +226,41 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	// nil allowedGenders means include all performers
 
 	addSkipSingleNamePerformerTag := false
-	performerIDs, err := rel.performers(ctx, allowedGenders)
-	if err != nil {
-		if errors.Is(err, ErrSkipSingleNamePerformer) {
-			addSkipSingleNamePerformerTag = true
-		} else {
+	if !s.PerformerAssignmentLock {
+		performerIDs, err := rel.performers(ctx, allowedGenders)
+		if err != nil {
+			if errors.Is(err, ErrSkipSingleNamePerformer) {
+				addSkipSingleNamePerformerTag = true
+			} else {
+				return nil, err
+			}
+		}
+		if performerIDs != nil {
+			ret.Partial.PerformerIDs = &models.UpdateIDs{
+				IDs:  performerIDs,
+				Mode: models.RelationshipUpdateModeSet,
+			}
+		}
+	}
+
+	if !s.TagAssignmentLock {
+		tagIDs, err := rel.tags(ctx)
+		if err != nil {
 			return nil, err
 		}
-	}
-	if performerIDs != nil {
-		ret.Partial.PerformerIDs = &models.UpdateIDs{
-			IDs:  performerIDs,
-			Mode: models.RelationshipUpdateModeSet,
-		}
-	}
+		if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
+			tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
+			}
 
-	tagIDs, err := rel.tags(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
-		tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		}
-
-		tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
-	}
-	if tagIDs != nil {
-		ret.Partial.TagIDs = &models.UpdateIDs{
-			IDs:  tagIDs,
-			Mode: models.RelationshipUpdateModeSet,
+		if tagIDs != nil {
+			ret.Partial.TagIDs = &models.UpdateIDs{
+				IDs:  tagIDs,
+				Mode: models.RelationshipUpdateModeSet,
+			}
 		}
 	}
 
@@ -338,6 +345,10 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, resu
 }
 
 func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, tagToAdd string) error {
+	if s.TagAssignmentLock {
+		return nil
+	}
+
 	if err := txn.WithTxn(ctx, t.TxnManager, func(ctx context.Context) error {
 		tagID, err := strconv.Atoi(tagToAdd)
 		if err != nil {

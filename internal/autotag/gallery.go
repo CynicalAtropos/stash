@@ -45,6 +45,10 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 
 // GalleryPerformers tags the provided gallery with performers whose name matches the gallery's path.
 func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
+	if s.PerformerAssignmentLock {
+		return nil
+	}
+
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
@@ -69,6 +73,10 @@ func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerform
 //
 // Gallerys will not be tagged if studio is already set.
 func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
+	if s.StudioAssignmentLock {
+		return nil
+	}
+
 	if s.StudioID != nil {
 		// don't modify
 		return nil
@@ -83,6 +91,10 @@ func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpda
 
 // GalleryTags tags the provided gallery with tags whose name matches the gallery's path.
 func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
+	if s.TagAssignmentLock {
+		return nil
+	}
+
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
