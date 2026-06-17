@@ -253,6 +253,18 @@ $sceneTabWidth: 450px;
     }
   }
 
+  .vjs-frame-step-button {
+    cursor: pointer;
+  }
+
+  .vjs-frame-step-icon {
+    display: inline-block;
+    font-family: monospace;
+    font-size: 1.8em;
+    font-weight: bold;
+    line-height: 1.67;
+  }
+
   &.vjs-skip-buttons {
     .vjs-icon-next-item,
     .vjs-icon-previous-item {

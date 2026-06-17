@@ -17,6 +17,7 @@ import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
 import "./autostart-button";
+import "./frame-step-buttons";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
 import "./vtt-thumbnails";
@@ -389,6 +390,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             forward: 10,
             back: 10,
           },
+          frameStepButtons: {},
           skipButtons: {},
           trackActivity: {},
           vrMenu: {},
@@ -456,6 +458,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       skipButtons.setForwardHandler(onNext);
       skipButtons.setBackwardHandler(onPrevious);
     }, [getPlayer, onNext, onPrevious]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+      player.frameStepButtons().setFrameRate(file?.frame_rate);
+    }, [getPlayer, file?.frame_rate]);
 
     useEffect(() => {
       if (scene.interactive && interactiveInitialised) {
