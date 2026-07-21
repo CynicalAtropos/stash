@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getWSClient, useWSState } from "src/core/StashService";
 import {
   Job,
@@ -36,6 +36,32 @@ export const useMonitorJob = (
   });
 
   const [job, setJob] = useState<JobFragment | undefined>();
+  const completedJobID = useRef<string>();
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    if (!jobID) {
+      completedJobID.current = undefined;
+    }
+  }, [jobID]);
+
+  const completeJob = useCallback(
+    (completedJob?: JobFragment) => {
+      if (!jobID || completedJobID.current === jobID) {
+        return;
+      }
+
+      completedJobID.current = jobID;
+      stopPolling();
+      setJob(undefined);
+      onCompleteRef.current?.(completedJob);
+    },
+    [jobID, stopPolling]
+  );
 
   useEffect(() => {
     if (!jobID) {
@@ -48,22 +74,20 @@ export const useMonitorJob = (
 
     const j = jobData?.findJob;
     if (j) {
-      setJob(j);
-
       if (
         j.status === JobStatus.Finished ||
         j.status === JobStatus.Failed ||
         j.status === JobStatus.Cancelled
       ) {
-        setJob(undefined);
-        onComplete?.(j);
+        completeJob(j);
+      } else {
+        setJob(j);
       }
     } else {
       // must've already finished
-      setJob(undefined);
-      onComplete?.();
+      completeJob();
     }
-  }, [jobID, jobData, loading, onComplete]);
+  }, [jobID, jobData, loading, completeJob]);
 
   // monitor job
   useEffect(() => {
@@ -83,15 +107,14 @@ export const useMonitorJob = (
     if (event.type !== JobStatusUpdateType.Remove) {
       setJob(event.job);
     } else {
-      setJob(undefined);
-      onComplete?.(event.job);
+      completeJob(event.job);
     }
-  }, [jobsSubscribe, jobID, onComplete]);
+  }, [jobsSubscribe, jobID, completeJob]);
 
   // it's possible that the websocket connection isn't present
   // in that case, we'll just poll the server
   useEffect(() => {
-    if (!jobID) {
+    if (!jobID || completedJobID.current === jobID) {
       stopPolling();
       return;
     }
