@@ -44,6 +44,8 @@ export const InstalledScraperPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
+    setJobID(undefined);
+
     // job is complete, refresh all local data
     const ac = getClient();
     evictQueries(ac.cache, scraperMutationImpactedQueries);
@@ -113,6 +115,8 @@ export const AvailableScraperPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
+    setJobID(undefined);
+
     // job is complete, refresh all local data
     const ac = getClient();
     evictQueries(ac.cache, scraperMutationImpactedQueries);
