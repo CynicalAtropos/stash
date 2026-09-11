@@ -465,11 +465,17 @@ const makeSceneMarkersSceneUrl = (scene: GQL.SceneMarkerSceneDataFragment) => {
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
-  id?: string
+  id?: string,
+  currentPathname?: string
 ) {
   return (location: { pathname: string }) => {
     // #2291 - don't prompt if we're navigating within the gallery being edited
-    if (id !== undefined && location.pathname === `/${basepath}/${id}`) {
+    // #7154 - lightbox history navigation stays on the current router pathname
+    if (
+      id !== undefined &&
+      (location.pathname === currentPathname ||
+        location.pathname === `/${basepath}/${id}`)
+    ) {
       return true;
     }
 

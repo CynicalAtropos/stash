@@ -18,7 +18,7 @@ import ImageUtils from "src/utils/image";
 import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { useToast } from "src/hooks/Toast";
-import { Prompt } from "react-router-dom";
+import { Prompt, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import {
   genderToString,
@@ -53,6 +53,7 @@ import {
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
 import cloneDeep from "lodash-es/cloneDeep";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -99,6 +100,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const { configuration: stashConfig } = useConfigurationContext();
 
   const intl = useIntl();
+  const { pathname } = useLocation();
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -714,7 +716,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       <Prompt
         when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
+        message={handleUnsavedChanges(
+          intl,
+          "performers",
+          performer.id,
+          pathname
+        )}
       />
       {renderButtons("mb-3")}
 
